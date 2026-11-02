@@ -1,0 +1,43 @@
+.tpu-panel, .tpu-dialog { color: #233044; background: #f8fafc; font: 14px/1.5 system-ui, sans-serif; }
+.tpu-panel { margin: 12px 0; padding: 14px 16px; border: 1px solid #b6c8d7; border-radius: 10px; }
+.tpu-panel-top { display: flex; align-items: center; flex-wrap: wrap; gap: 10px 20px; }
+.tpu-panel-top strong { font-size: 17px; }
+.tpu-count { color: #52637a; }
+.tpu-toggle { margin: 0 0 0 auto; display: flex; align-items: center; cursor: pointer; gap: 5px; }
+.tpu-toggle input { appearance: auto; position: static; margin: 0; width: 17px; height: 17px; opacity: 1; }
+.tpu-panel .tpu-status { margin: 8px 0 0; font-size: 12px; }
+.tpu-panel .tpu-error { color: #a21e21; margin: 8px 0; }
+.tpu-rules { margin-top: 8px; }
+.tpu-rules summary { cursor: pointer; }
+.tpu-rules ul { margin: 8px 0 0; padding-left: 20px; }
+.tpu-rule { padding: 4px 0; }
+.tpu-rule .tpu-button { margin-left: 10px; }
+.tpu-button { appearance: none; font: 12px/1.4 system-ui, sans-serif; color: #234d6d; background: #fff; border: 1px solid #9bb5c9; border-radius: 5px; padding: 4px 7px; cursor: pointer; white-space: normal; }
+.tpu-button:hover { background: #e7f2fb; }
+.tpu-button:disabled { cursor: wait; opacity: .55; }
+.tpu-button:focus-visible, .tpu-toggle input:focus-visible, .tpu-rules summary:focus-visible { outline: 3px solid #1378c4; outline-offset: 3px; }
+.timetable td[data-tpu-prepared] { vertical-align: middle; }
+.tpu-cell { display: flex; flex-direction: column; justify-content: center; min-height: 64px; width: 100%; }
+.tpu-cell > .tpu-lesson { padding: 6px 2px; flex: 1 0 auto; overflow-wrap: anywhere; }
+.tpu-cell > .tpu-divider { border-top: 1px solid currentColor; margin-top: 5px; padding-top: 10px; }
+.tpu-cell > .tpu-is-hidden { outline: 1px dashed #9a6616; outline-offset: -2px; }
+.tpu-actions { margin-top: 5px; }
+.tpu-actions summary { display: inline-block; cursor: pointer; font: 11px/1.4 system-ui, sans-serif; border-bottom: 1px dotted currentColor; }
+.tpu-actions summary:focus-visible { outline: 3px solid #1378c4; outline-offset: 3px; }
+.tpu-action-buttons { display: flex; justify-content: center; flex-wrap: wrap; gap: 4px; margin-top: 7px; }
+.tpu-actions:not([open]) > .tpu-action-buttons { display: none; }
+.tpu-badge { display: block; margin: 6px auto 2px; padding: 2px 4px; font: 11px/1.4 system-ui, sans-serif; background: #fff0cb; color: #66440d; border-radius: 4px; }
+.tpu-panel [hidden], .tpu-cell [hidden] { display: none !important; }
+.timetable td.tpu-empty { background-color: transparent !important; }
+.tpu-dialog { width: min(460px, calc(100vw - 40px)); padding: 22px; border: 1px solid #9bb5c9; border-radius: 12px; box-shadow: 0 16px 60px #0005; }
+.tpu-dialog::backdrop { background: #162b4380; }
+.tpu-dialog h3 { margin: 0 0 14px; font-size: 18px; color: inherit; }
+.tpu-dialog .tpu-confirm-description { font-weight: 600; overflow-wrap: anywhere; }
+.tpu-dialog .tpu-button { margin: 8px 8px 0 0; }
+@media (prefers-color-scheme: dark) {
+  .tpu-panel, .tpu-dialog { background: #202a36; color: #e5edf5; border-color: #536b80; }
+  .tpu-count { color: #b7c8d9; }
+  .tpu-button { background: #293b4b; color: #d8edff; border-color: #68869c; }
+  .tpu-button:hover { background: #36546b; }
+  .tpu-panel .tpu-error { color: #ffb4b4; }
+}

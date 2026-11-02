@@ -1,0 +1,21 @@
+{
+  "manifest_version": 3,
+  "name": "ТПУ — моё расписание",
+  "version": "0.1.0",
+  "description": "Скрывайте пары по предмету, преподавателю и типу занятия или пропускайте одну пару. Все правила хранятся локально.",
+  "permissions": ["storage"],
+  "browser_specific_settings": {
+    "gecko": {
+      "id": "tpu-schedule-filter@local.invalid",
+      "strict_min_version": "142.0",
+      "data_collection_permissions": { "required": ["none"] }
+    }
+  },
+  "background": { "scripts": ["core/rules.js", "core/store.js", "background.js"] },
+  "content_scripts": [{
+    "matches": ["https://my-rasp.tpu.ru/gruppa_*/view.html", "https://my-rasp.tpu.ru/gruppa_*/*/view.html"],
+    "js": ["core/rules.js", "content/parser.js", "content/ui.js", "content/app.js"],
+    "css": ["content/styles.css"],
+    "run_at": "document_idle"
+  }]
+}
