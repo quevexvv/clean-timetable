@@ -87,7 +87,7 @@ test('built Chromium service worker answers messages through the Chrome API shim
     assert.equal(listeners.length, 1);
     let response;
     const keepAlive = listeners[0]({ kind: 'tpu:get' },
-      { id: 'test-extension', url: 'https://ro-rasp.tpu.ru/gruppa_44510/2026/11/view.html' },
+      { id: 'test-extension', url: 'https://ro-rasp.tpu.ru/gruppa_900001/2026/11/view.html' },
       value => { response = value; });
     assert.equal(keepAlive, true);
     await tick();

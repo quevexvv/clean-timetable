@@ -11,7 +11,7 @@ const fixture = readFileSync(join(__dirname, 'fixtures/week.html'), 'utf8');
 const manifest = require('../src/extension/manifest.json');
 const scripts = manifest.content_scripts[0].js;
 const tick = async () => { for (let i = 0; i < 4; i++) await new Promise(resolve => setImmediate(resolve)); };
-const groupUrl = (host = 'my-rasp', week = 10) => `https://${host}.tpu.ru/gruppa_44510/2026/${week}/view.html`;
+const groupUrl = (host = 'my-rasp', week = 10) => `https://${host}.tpu.ru/gruppa_900001/2026/${week}/view.html`;
 function setup({ url = groupUrl(), failRead = false, failWrite = false, html = fixture, data = {}, locale } = {}) {
   const dom = new JSDOM(html, { url, runScripts: 'outside-only' });
   const { window } = dom;
@@ -33,7 +33,7 @@ function setup({ url = groupUrl(), failRead = false, failWrite = false, html = f
     i18n: mockI18n(locale),
     runtime: { async sendMessage(message) {
       messages.push(message);
-      try { return { state: message.kind === 'tpu:get' ? await store.get('44510') : await store.update('44510', message.action, message.lesson) }; }
+      try { return { state: message.kind === 'tpu:get' ? await store.get('900001') : await store.update('900001', message.action, message.lesson) }; }
       catch (error) { return { error: error.message }; }
     } },
     storage: { onChanged: { addListener(listener) { listeners.push(listener); } } },
@@ -61,7 +61,7 @@ test('parser maps rowspan correctly and preserves missing-teacher and unknown bl
   broken.href = 'http://[';
   broken.textContent = 'Invalid unrelated link';
   raw.window.document.querySelector('#lecture').append(broken);
-  const records = parsed(raw.window.document.querySelector('table'), '44510');
+  const records = parsed(raw.window.document.querySelector('table'), '900001');
   const lecture = records.find(record => record.cell.id === 'lecture').blocks[0].lesson;
   assert.equal(lecture.date, '2026-11-04');
   const lab = records.find(record => record.cell.id === 'lab').blocks[0].lesson;
@@ -147,7 +147,7 @@ test('skip, empty cell, restore and a fresh page retain the saved choice', async
   assert.equal(app.visible('lecture').length, 1);
   app.click(app.visible('lecture')[0], 'Вернуть эту пару'); await tick();
   assert.ok(!app.document.querySelector('#lecture').classList.contains('tpu-empty'));
-  assert.equal((await app.store.get('44510')).skipped.length, 0);
+  assert.equal((await app.store.get('900001')).skipped.length, 0);
 });
 test('delayed site decryption is detected without storing encrypted names', async t => {
   const app = setup(); t.after(() => app.dom.window.close()); await tick();
@@ -195,7 +195,7 @@ test('recurring rules follow the timetable across weeks while a skip stays on it
   function readWeek(html, week) {
     const dom = new JSDOM(html, { url: groupUrl('my-rasp', week) });
     t.after(() => dom.window.close());
-    const records = parse(dom.window.document.querySelector('table'), '44510');
+    const records = parse(dom.window.document.querySelector('table'), '900001');
     return records.flatMap(record => record.blocks.flatMap(block => block.lesson ? [block.lesson] : []));
   }
   const current = readWeek(fixture, 10);

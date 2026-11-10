@@ -1,13 +1,13 @@
 const { test } = require('node:test');
 const assert = require('node:assert/strict');
 const rules = require('../src/extension/core/rules.js');
-const base = { group: '44510', subject: 'Английский язык', type: 'ЛК', teacherIds: ['57063'], teacherLabel: 'Ануфриева Т. Н.', date: '2026-11-02', time: '08:30' };
+const base = { group: '900001', subject: 'Английский язык', type: 'ЛК', teacherIds: ['101'], teacherLabel: 'Орлова Т. Н.', date: '2026-11-02', time: '08:30' };
 
 test('permanent rules match subject, teacher, type and group on other weeks', () => {
   const state = rules.change(rules.emptyState(), 'hide', base);
   assert.ok(rules.reason(state, { ...base, date: '2027-01-11', room: 'different' }));
-  for (const difference of [{ group: '44511' }, { subject: 'Физика' }, { type: 'ПР' },
-    { type: 'ЛБ' }, { teacherIds: ['109784'] }, { teacherIds: [] }]) {
+  for (const difference of [{ group: '900002' }, { subject: 'Физика' }, { type: 'ПР' },
+    { type: 'ЛБ' }, { teacherIds: ['102'] }, { teacherIds: [] }]) {
     assert.equal(rules.reason(state, { ...base, ...difference }), '');
   }
 });
