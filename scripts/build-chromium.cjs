@@ -5,8 +5,8 @@ const { join, resolve } = require('node:path');
 
 const root = resolve(__dirname, '..');
 const defaults = {
-  sourceDir: join(root, 'extension'),
-  templateDir: join(root, 'chromium'),
+  sourceDir: join(root, 'src', 'extension'),
+  templateDir: join(root, 'src', 'chromium'),
   outDir: join(root, 'dist', 'chromium'),
 };
 

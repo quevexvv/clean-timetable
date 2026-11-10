@@ -6,12 +6,13 @@
 - `web-ext` 10.8.0 — зависимость только для разработки, с lockfile.
 - Без UI-фреймворка, сервера и зависимостей во время работы.
 
-## Планируемая структура
-- `extension/manifest.json` — разрешения и подключение скриптов Firefox.
-- `chromium/` — адаптер API и service worker для сборки Chromium; общий код не дублируется.
-- `extension/core/` — чистая логика правил и адаптер локального хранилища.
-- `extension/background.js` — единая очередь записи для всех вкладок.
-- `extension/content/` — разбор расписания, интерфейс и стили.
+## Структура
+- `src/extension/manifest.json` — разрешения и подключение скриптов Firefox.
+- `src/chromium/` — адаптер API и service worker для сборки Chromium; общий код не дублируется.
+- `src/extension/core/` — проверка адресов, логика правил и адаптер локального хранилища.
+- `src/extension/background.js` — единая очередь записи для всех вкладок.
+- `src/extension/content/` — разбор расписания, интерфейс и стили.
+- `scripts/` — сборка Chromium и проверка синтаксиса.
 - `tests/` — тесты логики, сборки Chromium и минимальные HTML-примеры расписания.
 - `docs/` — установка и ручная проверка; `dist/` — собираемые пакеты.
 
@@ -20,7 +21,7 @@
 - `npm ci` — установить инструменты из lockfile.
 - `npm test` — выполнить `node --test` без изоляции файлов.
 - `npm run check` — проверить синтаксис JS через `node --check`.
-- `npm run lint` — выполнить `web-ext lint` для `extension/`.
+- `npm run lint` — выполнить `web-ext lint` для `src/extension/`.
 - `npm run dev` — временно запустить расширение через `web-ext run` в Firefox.
 - `npm run build` — собрать пакет через `web-ext build` в `dist/`.
 - `npm run build:chromium` — собрать `dist/chromium/` и ZIP для Chromium из тех же исходников.
@@ -43,7 +44,7 @@
 - Не вставлять недоверенный текст страницы через `innerHTML`.
 - Не скрывать нераспознанные занятия по приблизительным совпадениям.
 - Не менять серверное расписание, iCal и посторонние элементы страницы.
-- Сборка Chromium не меняет файлы `extension/`; различия только в `chromium/` и генерируемом манифесте.
+- Сборка Chromium не меняет файлы `src/extension/`; различия только в `src/chromium/` и генерируемом манифесте.
 - Отправка пакета в Mozilla, Chrome Web Store, Edge Add-ons, Opera или Яндекс и публикация требуют отдельного поручения.
 
 ## Review guidelines

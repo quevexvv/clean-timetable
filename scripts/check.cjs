@@ -8,5 +8,5 @@ function check(directory) {
     else if (/\.(c?js)$/.test(path)) execFileSync(process.execPath, ['--check', path], { stdio: 'inherit' });
   }
 }
-for (const directory of ['extension', 'chromium', 'scripts', 'tests']) check(directory);
+for (const directory of ['src', 'scripts', 'tests']) check(directory);
 console.log('JavaScript syntax checks passed.');

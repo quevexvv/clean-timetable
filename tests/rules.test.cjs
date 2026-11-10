@@ -1,6 +1,6 @@
 const { test } = require('node:test');
 const assert = require('node:assert/strict');
-const rules = require('../extension/core/rules.js');
+const rules = require('../src/extension/core/rules.js');
 const base = { group: '44510', subject: 'Английский язык', type: 'ЛК', teacherIds: ['57063'], teacherLabel: 'Ануфриева Т. Н.', date: '2026-11-02', time: '08:30' };
 
 test('permanent rules match subject, teacher, type and group on other weeks', () => {

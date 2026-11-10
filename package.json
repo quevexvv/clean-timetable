@@ -6,9 +6,9 @@
   "scripts": {
     "test": "node --test --experimental-test-isolation=none tests/*.test.cjs",
     "check": "node scripts/check.cjs",
-    "lint": "web-ext lint --source-dir extension --warnings-as-errors",
-    "dev": "web-ext run --source-dir extension",
-    "build": "web-ext build --source-dir extension --artifacts-dir dist --filename tpu-schedule-filter-{version}.zip --overwrite-dest",
+    "lint": "web-ext lint --source-dir src/extension --warnings-as-errors",
+    "dev": "web-ext run --source-dir src/extension",
+    "build": "web-ext build --source-dir src/extension --artifacts-dir dist --filename tpu-schedule-filter-{version}.zip --overwrite-dest",
     "build:chromium": "node scripts/build-chromium.cjs && web-ext build --source-dir dist/chromium --artifacts-dir dist --filename tpu-schedule-filter-chromium-{version}.zip --overwrite-dest"
   },
   "engines": { "node": ">=22.23.1" },

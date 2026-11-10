@@ -6,8 +6,8 @@ const { join } = require('node:path');
 const vm = require('node:vm');
 const { buildChromium, createChromiumManifest } = require('../scripts/build-chromium.cjs');
 
-const root = join(__dirname, '..');
-const compatSource = readFileSync(join(root, 'chromium', 'compat.js'), 'utf8');
+const src = join(__dirname, '../src');
+const compatSource = readFileSync(join(src, 'chromium', 'compat.js'), 'utf8');
 const tick = () => new Promise(resolve => setImmediate(resolve));
 
 function loadCompat(existingBrowser) {
@@ -96,7 +96,7 @@ test('built Chromium service worker answers messages through the Chrome API shim
 });
 
 test('chromium manifest keeps shared sources and swaps only Chromium entry points', () => {
-  const source = JSON.parse(readFileSync(join(root, 'extension', 'manifest.json'), 'utf8'));
+  const source = JSON.parse(readFileSync(join(src, 'extension', 'manifest.json'), 'utf8'));
   const original = structuredClone(source);
   const manifest = createChromiumManifest(source);
   assert.deepEqual(source, original);
@@ -115,12 +115,12 @@ test('chromium manifest keeps shared sources and swaps only Chromium entry point
 test('chromium build output has the expected Chromium entry points', () => {
   const files = ['manifest.json', 'background.js', 'core/site.js', 'core/rules.js', 'core/store.js',
     'content/parser.js', 'content/ui.js', 'content/app.js', 'content/styles.css'];
-  const before = files.map(file => readFileSync(join(root, 'extension', file), 'utf8'));
+  const before = files.map(file => readFileSync(join(src, 'extension', file), 'utf8'));
   const temp = mkdtempSync(join(tmpdir(), 'tpu-chromium-'));
   try {
     const outDir = join(temp, 'chromium');
     const { manifest } = buildChromium({ outDir });
-    const after = files.map(file => readFileSync(join(root, 'extension', file), 'utf8'));
+    const after = files.map(file => readFileSync(join(src, 'extension', file), 'utf8'));
     assert.deepEqual(after, before);
     assert.equal(manifest.background.service_worker, 'chromium-background.js');
     assert.match(readFileSync(join(outDir, 'chromium-compat.js'), 'utf8'),

@@ -1,7 +1,7 @@
 const { test } = require('node:test');
 const assert = require('node:assert/strict');
-const rules = require('../extension/core/rules.js');
-const createStore = require('../extension/core/store.js');
+const rules = require('../src/extension/core/rules.js');
+const createStore = require('../src/extension/core/store.js');
 const base = { group: '44510', subject: 'Физика', type: 'ЛК', teacherIds: ['1'], date: '2026-11-02', time: '08:30' };
 function storage() {
   const data = {};

@@ -15,7 +15,7 @@ function background() {
   };
   const context = vm.createContext({ browser, URL, structuredClone });
   for (const name of ['core/site.js', 'core/rules.js', 'core/store.js', 'background.js']) {
-    vm.runInContext(readFileSync(join(__dirname, '../extension', name), 'utf8'), context);
+    vm.runInContext(readFileSync(join(__dirname, '../src/extension', name), 'utf8'), context);
   }
   return handler;
 }

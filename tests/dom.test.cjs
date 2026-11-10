@@ -3,11 +3,11 @@ const assert = require('node:assert/strict');
 const { readFileSync } = require('node:fs');
 const { join } = require('node:path');
 const { JSDOM } = require('jsdom');
-const rules = require('../extension/core/rules.js');
-const createStore = require('../extension/core/store.js');
-require('../extension/core/site.js');
+const rules = require('../src/extension/core/rules.js');
+const createStore = require('../src/extension/core/store.js');
+require('../src/extension/core/site.js');
 const fixture = readFileSync(join(__dirname, 'fixtures/week.html'), 'utf8');
-const manifest = JSON.parse(readFileSync(join(__dirname, '../extension/manifest.json'), 'utf8'));
+const manifest = require('../src/extension/manifest.json');
 const scripts = manifest.content_scripts[0].js;
 const tick = async () => { for (let i = 0; i < 4; i++) await new Promise(resolve => setImmediate(resolve)); };
 const groupUrl = (host = 'my-rasp', week = 10) => `https://${host}.tpu.ru/gruppa_44510/2026/${week}/view.html`;
@@ -36,7 +36,7 @@ function setup({ url = groupUrl(), failRead = false, failWrite = false, html = f
     } },
     storage: { onChanged: { addListener(listener) { listeners.push(listener); } } },
   };
-  const load = name => window.eval(readFileSync(join(__dirname, '../extension', name), 'utf8'));
+  const load = name => window.eval(readFileSync(join(__dirname, '../src/extension', name), 'utf8'));
   scripts.forEach(load);
   const document = window.document;
   const visible = id => [...document.querySelectorAll(`#${id} .tpu-lesson`)].filter(node => !node.hidden);
@@ -183,13 +183,13 @@ test('content script leaves other pages untouched', async t => {
   assert.equal(app.messages.length, 0);
 });
 test('date parsing validates actual dates and supports a year boundary', () => {
-  const { dateFrom } = require('../extension/content/parser.js');
+  const { dateFrom } = require('../src/extension/content/parser.js');
   assert.equal(dateFrom('31.12.26'), '2026-12-31');
   assert.equal(dateFrom('01.01.27'), '2027-01-01');
   assert.equal(dateFrom('31.02.26'), null);
 });
 test('real week snapshots parse every lesson and carry a rule across weeks', t => {
-  const { parse } = require('../extension/content/parser.js');
+  const { parse } = require('../src/extension/content/parser.js');
   const all = [];
   for (const week of [10, 11]) {
     const dom = new JSDOM(readFileSync(join(__dirname, `fixtures/tpu-week${week}.html`), 'utf8'),
@@ -276,7 +276,7 @@ test('a hidden lesson keeps the site highlight of the current day', async t => {
     .replace('</style>', '.timetable td.cur-day { background-color: rgb(232, 245, 233) !important; }</style>');
   const app = setup({ html }); t.after(() => app.dom.window.close()); await tick();
   const style = app.document.createElement('style');
-  style.textContent = readFileSync(join(__dirname, '../extension/content/styles.css'), 'utf8');
+  style.textContent = readFileSync(join(__dirname, '../src/extension/content/styles.css'), 'utf8');
   app.document.head.append(style);
   const cell = app.document.querySelector('#lecture');
   assert.equal(app.window.getComputedStyle(cell).backgroundColor, 'rgb(232, 245, 233)');
