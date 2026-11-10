@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="440" height="280" viewBox="0 0 440 280" font-family="Inter, DejaVu Sans, sans-serif">
+<rect x="0" y="0" width="440" height="280" rx="0" fill="#C8F0D3" stroke="none"/>
+<path d="M14 34L426 34" stroke="#ACDFC0" stroke-width="1"/>
+<path d="M14 167L426 167" stroke="#ACDFC0" stroke-width="1"/>
+<path d="M55 18L55 187" stroke="#ACDFC0" stroke-width="1"/>
+<path d="M124 18L124 187" stroke="#ACDFC0" stroke-width="1"/>
+<path d="M316 18L316 187" stroke="#ACDFC0" stroke-width="1"/>
+<path d="M385 18L385 187" stroke="#ACDFC0" stroke-width="1"/>
+<rect x="32" y="62" width="110" height="28" rx="8" fill="#DEF6E5" stroke="none"/>
+<rect x="49" y="126" width="68" height="23" rx="7" fill="#DEF6E5" stroke="none"/>
+<rect x="311" y="56" width="95" height="27" rx="8" fill="#DEF6E5" stroke="none"/>
+<rect x="332" y="131" width="68" height="24" rx="7" fill="#DEF6E5" stroke="none"/>
+<g transform="translate(158 42) scale(0.96875)">  <rect width="128" height="128" rx="30" fill="#28BE46"/>
+  <rect x="16" y="21" width="8" height="87" rx="4" fill="#FFB600"/>
+  <rect x="29" y="26" width="72" height="22" rx="6" fill="#FFFFFF"/>
+  <rect x="32" y="64" width="23" height="8" rx="4" fill="#FFFFFF"/>
+  <rect x="60" y="54" width="56" height="19" rx="6" fill="#3945BE" transform="rotate(-8 88 63.5)"/>
+  <rect x="29" y="82" width="68" height="22" rx="6" fill="#FFFFFF"/>
+</g>
+<text x="220" y="216" fill="#152B23" font-size="33" font-weight="750" text-anchor="middle" letter-spacing="-1">Clean Timetable</text>
+<text x="220" y="248" fill="#345B46" font-size="23" font-weight="600" text-anchor="middle" letter-spacing="0">for TPU</text>
+</svg>
