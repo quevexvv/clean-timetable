@@ -13,6 +13,13 @@
     }
   },
   "background": { "scripts": ["core/site.js", "core/rules.js", "core/store.js", "background.js"] },
+  "icons": {
+    "16": "icons/timetable-16.png",
+    "32": "icons/timetable-32.png",
+    "48": "icons/timetable-48.png",
+    "64": "icons/timetable-64.png",
+    "128": "icons/timetable-128.png"
+  },
   "content_scripts": [{
     "matches": [
       "https://my-rasp.tpu.ru/gruppa_*/view.html", "https://my-rasp.tpu.ru/gruppa_*/*/view.html",
