@@ -6,9 +6,11 @@ Hide classes you don't need on the Tomsk Polytechnic University timetable. Both 
 
 The extension follows your browser language. It supports Russian and English and defaults to Russian for other languages.
 
+[Install for Firefox](https://addons.mozilla.org/en-US/firefox/addon/clean-timetable-for-tpu/)
+
 ![Full group timetable and the timetable after filtering](docs/assets/listing/github-social.png)
 
-## Quick install
+## Install from source
 
 Use Node.js 22.23.1 or later and run `npm ci` from the repository root. Build the version for your browser.
 
