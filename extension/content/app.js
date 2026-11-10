@@ -1,8 +1,8 @@
 (() => {
-  const group = /^\/gruppa_(\d+)\/(?:\d+\/\d+\/)?view\.html$/.exec(location.pathname)?.[1];
+  const { rules, parser, ui, site } = globalThis.TpuFilter;
+  const group = site.groupId(location);
   if (!group || globalThis.TpuFilter.started) return;
   globalThis.TpuFilter.started = true;
-  const { rules, parser, ui } = globalThis.TpuFilter;
   let state = rules.emptyState();
   let full = false;
   let busy = false;

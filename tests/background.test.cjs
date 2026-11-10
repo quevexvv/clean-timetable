@@ -14,26 +14,38 @@ function background() {
     } },
   };
   const context = vm.createContext({ browser, URL, structuredClone });
-  for (const name of ['core/rules.js', 'core/store.js', 'background.js']) {
+  for (const name of ['core/site.js', 'core/rules.js', 'core/store.js', 'background.js']) {
     vm.runInContext(readFileSync(join(__dirname, '../extension', name), 'utf8'), context);
   }
   return handler;
 }
 const sender = { id: 'test@local.invalid', url: 'https://my-rasp.tpu.ru/gruppa_44510/2026/10/view.html' };
+const publicSender = { ...sender, url: 'https://ro-rasp.tpu.ru/gruppa_44510/view.html' };
 test('background rejects other origins, pages, senders and cross-group writes', async () => {
   const send = background();
   for (const change of [{ url: 'https://example.com/gruppa_44510/2026/10/view.html' },
-    { url: 'https://my-rasp.tpu.ru/user_1/2026/10/view.html' }, { id: 'other@extension' }]) {
+    { url: 'http://ro-rasp.tpu.ru/gruppa_44510/view.html' },
+    { url: 'https://ro-rasp.tpu.ru.example.com/gruppa_44510/view.html' },
+    { url: 'https://my-rasp.tpu.ru/user_1/2026/10/view.html' },
+    { url: 'https://ro-rasp.tpu.ru/user_1/2026/10/view.html' },
+    { url: 'https://ro-rasp.tpu.ru/gruppa_44510/2026/11/extra/view.html' }, { id: 'other@extension' }]) {
     assert.ok((await send({ kind: 'tpu:get' }, { ...sender, ...change })).error);
   }
-  assert.ok((await send({ kind: 'tpu:update', action: 'hide', lesson: { group: '999' } }, sender)).error);
+  const foreignLesson = { group: '999', subject: 'Английский язык', type: 'ПР', teacherIds: ['1'] };
+  assert.match((await send({ kind: 'tpu:update', action: 'hide', lesson: foreignLesson }, publicSender)).error,
+    /Группа занятия не совпадает со страницей/);
   assert.equal((await send({ kind: 'tpu:get' }, sender)).state.rules.length, 0);
   assert.equal(send({ kind: 'unrelated' }, sender), undefined);
 });
-test('background serializes updates shared by tabs and returns saved state', async () => {
+test('background serializes updates across both sites and returns the same group state', async () => {
   const send = background();
   const item = { group: '44510', subject: 'Английский язык', type: 'ПР', teacherIds: ['1'] };
-  const results = await Promise.all([1, 2].map(id => send({ kind: 'tpu:update', action: 'hide', lesson: { ...item, teacherIds: [`${id}`] } }, sender)));
+  const results = await Promise.all([sender, publicSender].map((tab, i) => send({
+    kind: 'tpu:update', action: 'hide', lesson: { ...item, teacherIds: [`${i + 1}`] },
+  }, tab)));
   assert.ok(results.every(result => !result.error));
-  assert.equal((await send({ kind: 'tpu:get' }, sender)).state.rules.length, 2);
+  for (const tab of [sender, publicSender]) {
+    const { state } = await send({ kind: 'tpu:get' }, tab);
+    assert.deepEqual(Array.from(state.rules, rule => rule.teacherIds[0]), ['1', '2']);
+  }
 });

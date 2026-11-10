@@ -1,5 +1,6 @@
 (() => {
   const normalize = globalThis.TpuFilter.rules.normalize;
+  const { teacherId } = globalThis.TpuFilter.site;
   function dateFrom(text) {
     const match = /\b(\d{2})\.(\d{2})\.(\d{4}|\d{2})\b/.exec(text);
     if (!match) return null;
@@ -25,11 +26,8 @@
     if (find('.encrypt').length) return null;
     const subjectNode = find('span[data-title], a[data-encrypt], span[title]')[0];
     const teachers = find('a[href]').flatMap(anchor => {
-      try {
-        const url = new URL(anchor.getAttribute('href'), 'https://my-rasp.tpu.ru');
-        const id = url.origin === 'https://my-rasp.tpu.ru' && /^\/user_(\d+)\//.exec(url.pathname)?.[1];
-        return id ? [{ id, label: normalize(anchor.textContent) }] : [];
-      } catch { return []; }
+      const id = teacherId(anchor.getAttribute('href'), anchor.baseURI);
+      return id ? [{ id, label: normalize(anchor.textContent) }] : [];
     });
     // TPU also separates teachers under one shared subject/type heading with an hr.
     const inherit = !subjectNode && teachers.length > 0 && previous;

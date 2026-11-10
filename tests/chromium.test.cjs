@@ -83,7 +83,7 @@ test('built Chromium service worker answers messages through the Chrome API shim
     assert.equal(listeners.length, 1);
     let response;
     const keepAlive = listeners[0]({ kind: 'tpu:get' },
-      { id: 'test-extension', url: 'https://my-rasp.tpu.ru/gruppa_44510/2026/10/view.html' },
+      { id: 'test-extension', url: 'https://ro-rasp.tpu.ru/gruppa_44510/2026/11/view.html' },
       value => { response = value; });
     assert.equal(keepAlive, true);
     await tick();
@@ -106,11 +106,14 @@ test('chromium manifest keeps shared sources and swaps only Chromium entry point
   assert.deepEqual(manifest.content_scripts[0].js,
     ['chromium-compat.js', ...original.content_scripts[0].js]);
   assert.deepEqual(manifest.content_scripts[0].matches, original.content_scripts[0].matches);
+  assert.deepEqual(manifest.content_scripts[0].matches, ['my-rasp', 'ro-rasp'].flatMap(host => [
+    `https://${host}.tpu.ru/gruppa_*/view.html`, `https://${host}.tpu.ru/gruppa_*/*/view.html`,
+  ]));
   assert.deepEqual(manifest.permissions, ['storage']);
 });
 
 test('chromium build output has the expected Chromium entry points', () => {
-  const files = ['manifest.json', 'background.js', 'core/rules.js', 'core/store.js',
+  const files = ['manifest.json', 'background.js', 'core/site.js', 'core/rules.js', 'core/store.js',
     'content/parser.js', 'content/ui.js', 'content/app.js', 'content/styles.css'];
   const before = files.map(file => readFileSync(join(root, 'extension', file), 'utf8'));
   const temp = mkdtempSync(join(tmpdir(), 'tpu-chromium-'));
@@ -123,7 +126,7 @@ test('chromium build output has the expected Chromium entry points', () => {
     assert.match(readFileSync(join(outDir, 'chromium-compat.js'), 'utf8'),
       /globalThis\.browser = \{ storage: chromeApi\.storage, runtime \}/);
     assert.match(readFileSync(join(outDir, 'chromium-background.js'), 'utf8'),
-      /importScripts\('chromium-compat\.js', 'core\/rules\.js', 'core\/store\.js', 'background\.js'\)/);
+      /importScripts\('chromium-compat\.js', 'core\/site\.js', 'core\/rules\.js', 'core\/store\.js', 'background\.js'\)/);
     for (const file of files.filter(name => name !== 'manifest.json')) {
       assert.equal(readFileSync(join(outDir, file), 'utf8'), before[files.indexOf(file)]);
     }

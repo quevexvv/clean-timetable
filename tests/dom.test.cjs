@@ -5,13 +5,15 @@ const { join } = require('node:path');
 const { JSDOM } = require('jsdom');
 const rules = require('../extension/core/rules.js');
 const createStore = require('../extension/core/store.js');
+require('../extension/core/site.js');
 const fixture = readFileSync(join(__dirname, 'fixtures/week.html'), 'utf8');
-const scripts = ['core/rules.js', 'content/parser.js', 'content/ui.js', 'content/app.js'];
+const manifest = JSON.parse(readFileSync(join(__dirname, '../extension/manifest.json'), 'utf8'));
+const scripts = manifest.content_scripts[0].js;
 const tick = async () => { for (let i = 0; i < 4; i++) await new Promise(resolve => setImmediate(resolve)); };
-function setup({ url = 'https://my-rasp.tpu.ru/gruppa_44510/2026/10/view.html', failRead = false, failWrite = false, html = fixture } = {}) {
+const groupUrl = (host = 'my-rasp', week = 10) => `https://${host}.tpu.ru/gruppa_44510/2026/${week}/view.html`;
+function setup({ url = groupUrl(), failRead = false, failWrite = false, html = fixture, data = {} } = {}) {
   const dom = new JSDOM(html, { url, runScripts: 'outside-only' });
   const { window } = dom;
-  const data = {};
   const listeners = [];
   const adapter = {
     async get(key) { if (failRead) throw new Error('read denied'); return structuredClone({ [key]: data[key] }); },
@@ -51,7 +53,7 @@ function setup({ url = 'https://my-rasp.tpu.ru/gruppa_44510/2026/10/view.html', 
 test('parser maps rowspan correctly and preserves missing-teacher and unknown blocks', async t => {
   const app = setup(); t.after(() => app.dom.window.close()); await tick();
   const parsed = app.window.TpuFilter.parser.parse;
-  const raw = new JSDOM(fixture);
+  const raw = new JSDOM(fixture, { url: groupUrl() });
   t.after(() => raw.window.close());
   const broken = raw.window.document.createElement('a');
   broken.href = 'http://[';
@@ -94,6 +96,36 @@ test('hide, full view, restore, skip and disable keep exact rule scope', async t
   app.click(app.document.querySelector('.tpu-rules'), 'Отключить правило'); await tick();
   assert.equal(app.visible('double').length, 1);
   assert.equal(app.visible('repeat').length, 1);
+});
+test('ro-rasp reuses exact my-rasp rules and recognizes links on both TPU hosts', async t => {
+  const original = setup();
+  t.after(() => original.dom.window.close());
+  await tick();
+  original.click(original.visible('double')[0], 'Скрывать всегда');
+  original.click(original.document.querySelector('dialog'), 'Скрывать всегда');
+  await tick();
+
+  const html = fixture
+    .replace('href="/user_57063/', 'href="https://ro-rasp.tpu.ru/user_57063/')
+    .replace('href="/user_109784/', 'href="https://my-rasp.tpu.ru/user_109784/');
+  const app = setup({ url: groupUrl('ro-rasp'), html, data: original.data });
+  t.after(() => app.dom.window.close());
+  await tick();
+  assert.equal(app.document.querySelectorAll('.tpu-panel').length, 1);
+  assert.match(app.visible('double')[0].textContent, /Макаровских/);
+  assert.equal(app.visible('double').length, 1);
+  assert.equal(app.visible('repeat').length, 0);
+  assert.equal(app.visible('lecture').length, 1);
+  app.click(app.visible('double')[0], 'Скрывать всегда');
+  assert.match(app.document.querySelector('.tpu-confirm-description').textContent, /Макаровских/);
+  app.click(app.document.querySelector('dialog'), 'Отмена');
+
+  app.document.querySelector('.tpu-toggle input').click();
+  app.click(app.visible('double')[0], 'Вернуть эту пару');
+  await tick();
+  app.document.querySelector('.tpu-toggle input').click();
+  assert.equal(app.visible('double').length, 2);
+  assert.equal(app.visible('repeat').length, 0);
 });
 test('skip, empty cell, restore and a fresh page retain the saved choice', async t => {
   const app = setup(); t.after(() => app.dom.window.close()); await tick();
@@ -160,7 +192,8 @@ test('real week snapshots parse every lesson and carry a rule across weeks', t =
   const { parse } = require('../extension/content/parser.js');
   const all = [];
   for (const week of [10, 11]) {
-    const dom = new JSDOM(readFileSync(join(__dirname, `fixtures/tpu-week${week}.html`), 'utf8'));
+    const dom = new JSDOM(readFileSync(join(__dirname, `fixtures/tpu-week${week}.html`), 'utf8'),
+      { url: groupUrl('my-rasp', week) });
     t.after(() => dom.window.close());
     const records = parse(dom.window.document.querySelector('table'), '44510');
     const lessons = records.flatMap(record => record.blocks.map(block => block.lesson));

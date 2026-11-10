@@ -11,10 +11,13 @@
       "data_collection_permissions": { "required": ["none"] }
     }
   },
-  "background": { "scripts": ["core/rules.js", "core/store.js", "background.js"] },
+  "background": { "scripts": ["core/site.js", "core/rules.js", "core/store.js", "background.js"] },
   "content_scripts": [{
-    "matches": ["https://my-rasp.tpu.ru/gruppa_*/view.html", "https://my-rasp.tpu.ru/gruppa_*/*/view.html"],
-    "js": ["core/rules.js", "content/parser.js", "content/ui.js", "content/app.js"],
+    "matches": [
+      "https://my-rasp.tpu.ru/gruppa_*/view.html", "https://my-rasp.tpu.ru/gruppa_*/*/view.html",
+      "https://ro-rasp.tpu.ru/gruppa_*/view.html", "https://ro-rasp.tpu.ru/gruppa_*/*/view.html"
+    ],
+    "js": ["core/site.js", "core/rules.js", "content/parser.js", "content/ui.js", "content/app.js"],
     "css": ["content/styles.css"],
     "run_at": "document_idle"
   }]
