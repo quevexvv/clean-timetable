@@ -38,6 +38,7 @@ function buildChromium(options = {}) {
   rmSync(outDir, { recursive: true, force: true });
   mkdirSync(outDir, { recursive: true });
   cpSync(sourceDir, outDir, { recursive: true });
+  copyFileSync(join(root, 'LICENSE'), join(outDir, 'LICENSE'));
   writeFileSync(join(outDir, 'manifest.json'), `${JSON.stringify(manifest, null, 2)}\n`);
   copyFileSync(join(templateDir, 'compat.js'), join(outDir, 'chromium-compat.js'));
   copyFileSync(join(templateDir, 'background.js'), join(outDir, 'chromium-background.js'));
