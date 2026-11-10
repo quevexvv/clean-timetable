@@ -10,18 +10,25 @@ The extension follows your browser language. It supports Russian and English and
 
 ![Full group timetable and the timetable after filtering](docs/assets/listing/github-social.png)
 
+## Release downloads
+
+The [v1.0.0 release](https://github.com/quevexvv/clean-timetable/releases/tag/v1.0.0) includes two ZIP archives. Installing from a ZIP requires no Node.js setup.
+
+- [Firefox ZIP](https://github.com/quevexvv/clean-timetable/releases/download/v1.0.0/tpu-schedule-filter-firefox-1.0.0.zip) — load it through `about:debugging` for a temporary installation.
+- [Chromium ZIP](https://github.com/quevexvv/clean-timetable/releases/download/v1.0.0/tpu-schedule-filter-chromium-1.0.0.zip) — extract it and load the folder containing `manifest.json` in developer mode.
+
+[Firefox guide](docs/en/firefox.md) · [Chromium guide](docs/en/chromium.md)
+
 ## Install from source
 
 Use Node.js 22.23.1 or later and run `npm ci` from the repository root. Build the version for your browser.
 
-| Browser | Command | Load this build |
-| --- | --- | --- |
-| Firefox, Firefox ESR, Zen, LibreWolf, Waterfox, and Floorp on Gecko 142+ | `npm run build:firefox` | Open `about:debugging`, choose **Load Temporary Add-on**, and select `dist/tpu-schedule-filter-firefox-1.0.0.zip`. |
-| Chrome, Edge, and other Chromium 109+ browsers | `npm run build:chromium` | Open the browser’s extensions page, enable developer mode, and select `dist/chromium/` with **Load unpacked**. |
+| Browser                                                                  | Command                  | Load this build                                                                                                    |
+| ------------------------------------------------------------------------ | ------------------------ | ------------------------------------------------------------------------------------------------------------------ |
+| Firefox, Firefox ESR, Zen, LibreWolf, Waterfox, and Floorp on Gecko 142+ | `npm run build:firefox`  | Open `about:debugging`, choose **Load Temporary Add-on**, and select `dist/tpu-schedule-filter-firefox-1.0.0.zip`. |
+| Chrome, Edge, and other Chromium 109+ browsers                           | `npm run build:chromium` | Open the browser’s extensions page, enable developer mode, and select `dist/chromium/` with **Load unpacked**.     |
 
 Reload your group timetable. Look for **My timetable** above the table. Permanent installation in Firefox requires a signed add-on.
-
-[Firefox guide](docs/en/firefox.md) · [Chromium guide](docs/en/chromium.md)
 
 ## Use the filter
 
@@ -39,13 +46,13 @@ Remove a recurring rule under **Recurring rules**. One-off skips remain in effec
 
 ### Repository layout
 
-| Directory | Contents |
-| --- | --- |
-| `src/extension/` | Shared filtering code, timetable UI, and Firefox manifest |
-| `src/chromium/` | Chromium API adapter and entry point |
-| `scripts/` | Build scripts |
-| `docs/` | Installation guides in Russian and English |
-| `dist/` | Unpacked `firefox/` and `chromium/` builds and a ZIP for each browser |
+| Directory        | Contents                                                              |
+| ---------------- | --------------------------------------------------------------------- |
+| `src/extension/` | Shared filtering code, timetable UI, and Firefox manifest             |
+| `src/chromium/`  | Chromium API adapter and entry point                                  |
+| `scripts/`       | Build scripts                                                         |
+| `docs/`          | Installation guides in Russian and English                            |
+| `dist/`          | Unpacked `firefox/` and `chromium/` builds and a ZIP for each browser |
 
 ## License
 

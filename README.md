@@ -10,18 +10,25 @@
 
 ![Полное расписание группы и расписание после фильтрации](docs/assets/listing/github-social.png)
 
+## Готовые сборки
+
+В [релизе v1.0.0](https://github.com/quevexvv/clean-timetable/releases/tag/v1.0.0) доступны два архива. Для установки из ZIP Node.js не нужен.
+
+- [Firefox ZIP](https://github.com/quevexvv/clean-timetable/releases/download/v1.0.0/tpu-schedule-filter-firefox-1.0.0.zip) - загрузите через `about:debugging` для временной установки.
+- [Chromium ZIP](https://github.com/quevexvv/clean-timetable/releases/download/v1.0.0/tpu-schedule-filter-chromium-1.0.0.zip) - распакуйте и загрузите папку с `manifest.json` в режиме разработчика.
+
+[Инструкция для Firefox](docs/firefox.md) · [Инструкция для Chromium](docs/chromium.md)
+
 ## Установка из исходников
 
 Установите Node.js 22.23.1 или новее. В корне проекта выполните `npm ci` и соберите версию для своего браузера.
 
-| Браузер | Команда | Что загрузить |
-| --- | --- | --- |
-| Firefox, Firefox ESR, Zen, LibreWolf, Waterfox, Floorp на Gecko 142+ | `npm run build:firefox` | Откройте `about:debugging`, нажмите **«Загрузить временное дополнение»** и выберите `dist/tpu-schedule-filter-firefox-1.0.0.zip`. |
-| Chrome, Edge и другие браузеры на Chromium 109+ | `npm run build:chromium` | На странице расширений включите режим разработчика, нажмите **«Загрузить распакованное расширение»** и выберите `dist/chromium/`. |
+| Браузер                                                              | Команда                  | Что загрузить                                                                                                                     |
+| -------------------------------------------------------------------- | ------------------------ | --------------------------------------------------------------------------------------------------------------------------------- |
+| Firefox, Firefox ESR, Zen, LibreWolf, Waterfox, Floorp на Gecko 142+ | `npm run build:firefox`  | Откройте `about:debugging`, нажмите **«Загрузить временное дополнение»** и выберите `dist/tpu-schedule-filter-firefox-1.0.0.zip`. |
+| Chrome, Edge и другие браузеры на Chromium 109+                      | `npm run build:chromium` | На странице расширений включите режим разработчика, нажмите **«Загрузить распакованное расширение»** и выберите `dist/chromium/`. |
 
 Обновите вкладку с расписанием группы. Над таблицей появится **«Моё расписание»**. Для постоянной установки в Firefox нужен подписанный пакет.
-
-[Инструкция для Firefox](docs/firefox.md) · [Инструкция для Chromium](docs/chromium.md)
 
 ## Как пользоваться
 
@@ -39,13 +46,13 @@
 
 ### Структура
 
-| Папка | Содержимое |
-| --- | --- |
-| `src/extension/` | Общий код фильтрации, интерфейс расписания и манифест Firefox |
-| `src/chromium/` | Адаптер API и точка входа Chromium |
-| `scripts/` | Скрипты сборки |
-| `docs/` | Инструкции на русском и английском |
-| `dist/` | Распакованные сборки `firefox/` и `chromium/` и ZIP-архивы для каждого браузера |
+| Папка            | Содержимое                                                                      |
+| ---------------- | ------------------------------------------------------------------------------- |
+| `src/extension/` | Общий код фильтрации, интерфейс расписания и манифест Firefox                   |
+| `src/chromium/`  | Адаптер API и точка входа Chromium                                              |
+| `scripts/`       | Скрипты сборки                                                                  |
+| `docs/`          | Инструкции на русском и английском                                              |
+| `dist/`          | Распакованные сборки `firefox/` и `chromium/` и ZIP-архивы для каждого браузера |
 
 ## Лицензия
 
