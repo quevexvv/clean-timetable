@@ -1,5 +1,7 @@
 # Установка в Firefox и Zen
 
+Версия для Chrome, Edge, Brave, Opera, Vivaldi и Яндекс Браузера собирается отдельно и устанавливается из `dist/chromium`; см. [chromium.md](chromium.md).
+
 ## Проверить текущую версию
 
 1. Используйте ZIP `dist/tpu-schedule-filter-0.1.0.zip`. Для Zen из Flatpak скопируйте его в папку «Загрузки».
