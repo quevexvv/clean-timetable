@@ -209,7 +209,7 @@ test('hidden count uses Russian forms without a schedule total', async t => {
   }
   assert.equal(panel.panel.querySelector('.tpu-count').getAttribute('aria-live'), 'polite');
 });
-test('empty cells override inline important backgrounds and restore the original style', async t => {
+test('empty cells drop only the subject tint and restore the original style', async t => {
   for (const declaration of ['background-color: rgba(111,189,1,0.3) !important',
     'background-color: rgb(98,130,32)', 'border: 1px solid black']) {
     const html = fixture.replace('id="lecture"', `id="lecture" style="${declaration}"`);
@@ -219,8 +219,8 @@ test('empty cells override inline important backgrounds and restore the original
     const priority = cell.style.getPropertyPriority('background-color');
     const border = cell.style.border;
     app.click(app.visible('lecture')[0], 'Пропустить пару'); await tick();
-    assert.equal(cell.style.backgroundColor, 'transparent');
-    assert.equal(cell.style.getPropertyPriority('background-color'), 'important');
+    assert.equal(cell.style.getPropertyValue('background-color'), '');
+    assert.equal(cell.style.getPropertyPriority('background-color'), '');
     assert.equal(cell.style.border, border);
     app.document.querySelector('.tpu-toggle input').click(); await tick();
     assert.equal(cell.style.backgroundColor, original);
@@ -230,12 +230,26 @@ test('empty cells override inline important backgrounds and restore the original
     assert.equal(restore.closest('details'), null);
     assert.equal(app.visible('lecture')[0].querySelector('.tpu-actions').hidden, true);
     app.document.querySelector('.tpu-toggle input').click(); await tick();
-    assert.equal(cell.style.backgroundColor, 'transparent');
+    assert.equal(cell.style.getPropertyValue('background-color'), '');
     app.document.querySelector('.tpu-toggle input').click(); await tick();
     app.click(app.visible('lecture')[0], 'Вернуть эту пару'); await tick();
     assert.equal(cell.style.backgroundColor, original);
     assert.equal(cell.style.getPropertyPriority('background-color'), priority);
   }
+});
+test('a hidden lesson keeps the site highlight of the current day', async t => {
+  const html = fixture
+    .replace('<td class="cell" id="lecture">', '<td class="cell cur-day" id="lecture">')
+    .replace('</style>', '.timetable td.cur-day { background-color: rgb(232, 245, 233) !important; }</style>');
+  const app = setup({ html }); t.after(() => app.dom.window.close()); await tick();
+  const style = app.document.createElement('style');
+  style.textContent = readFileSync(join(__dirname, '../extension/content/styles.css'), 'utf8');
+  app.document.head.append(style);
+  const cell = app.document.querySelector('#lecture');
+  assert.equal(app.window.getComputedStyle(cell).backgroundColor, 'rgb(232, 245, 233)');
+  app.click(app.visible('lecture')[0], 'Пропустить пару'); await tick();
+  assert.equal(cell.style.getPropertyValue('background-color'), '');
+  assert.equal(app.window.getComputedStyle(cell).backgroundColor, 'rgb(232, 245, 233)');
 });
 test('successful skip closes the menu and focuses the remaining lesson or full view toggle', async t => {
   const app = setup(); t.after(() => app.dom.window.close()); await tick();

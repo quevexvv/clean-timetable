@@ -117,10 +117,13 @@
         for (const node of [hide, skip, restore]) node.disabled = busy || !ready;
       }
       cell.classList.toggle('tpu-empty', visible === 0);
-      // Site cells use inline !important, which a stylesheet cannot override.
-      if (visible === 0) cell.style.setProperty('background-color', 'transparent', 'important');
-      else if (background.value) cell.style.setProperty('background-color', background.value, background.priority);
-      else cell.style.removeProperty('background-color');
+      // Subject tints are inline !important. Remove only that declaration so the
+      // site's own cell styling, such as today's column, stays visible.
+      if (visible > 0 && background.value) {
+        cell.style.setProperty('background-color', background.value, background.priority);
+      } else {
+        cell.style.removeProperty('background-color');
+      }
     }
     panel.render(state, hiddenCount, full);
     for (const node of panel.panel.querySelectorAll('.tpu-rule button')) node.disabled = busy || !ready;

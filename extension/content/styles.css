@@ -30,7 +30,6 @@
 .tpu-restore { display: block; margin: 7px auto 0; min-height: 28px; }
 .tpu-badge { display: block; margin: 6px auto 2px; padding: 2px 4px; font: 11px/1.4 system-ui, sans-serif; background: #fff0cb; color: #66440d; border-radius: 4px; }
 .tpu-panel [hidden], .tpu-cell [hidden] { display: none !important; }
-.timetable td.tpu-empty { background-color: transparent !important; }
 .tpu-dialog { width: min(460px, calc(100vw - 40px)); padding: 22px; border: 1px solid #9bb5c9; border-radius: 12px; box-shadow: 0 16px 60px #0005; }
 .tpu-dialog::backdrop { background: #162b4380; }
 .tpu-dialog h3 { margin: 0 0 14px; font-size: 18px; color: inherit; }
