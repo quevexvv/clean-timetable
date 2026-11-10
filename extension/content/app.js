@@ -33,16 +33,30 @@
   }
   async function act(action, item) {
     if (busy || !ready) return;
+    const origin = records.find(record => record.entries.some(entry => entry.lesson === item));
+    let saved = false;
     busy = true;
     render();
     try {
       state = await request({ kind: 'tpu:update', action, lesson: item });
       panel.error('');
+      saved = true;
+      for (const entry of origin?.entries || []) {
+        if (entry.controls) entry.controls.bar.open = false;
+      }
     } catch (error) {
       panel.error(`Изменение не сохранено. ${error.message}`);
     } finally {
       busy = false;
       render();
+      if (saved && origin) {
+        const target = origin.entries.find(entry => entry.lesson === item && !entry.wrapper.hidden) ||
+          origin.entries.find(entry => entry.controls && !entry.wrapper.hidden);
+        if (target?.wrapper.isConnected) {
+          const control = target.controls.bar.hidden ? target.controls.restore : target.controls.bar.querySelector('summary');
+          control.focus();
+        } else panel.focusToggle();
+      }
     }
   }
   function controls(item, wrapper) {
@@ -54,10 +68,11 @@
     hide.title = `Только ${ui.label(item)}`;
     const skip = ui.button('Пропустить пару', () => act('skip', item));
     const restore = ui.button('Вернуть эту пару', () => act('restore', item));
+    restore.classList.add('tpu-restore');
     const badge = ui.element('span', 'tpu-badge');
-    buttons.append(hide, skip, restore);
+    buttons.append(hide, skip);
     bar.append(summary, buttons);
-    wrapper.append(badge, bar);
+    wrapper.append(badge, bar, restore);
     return { bar, hide, skip, restore, badge };
   }
   function prepare() {
@@ -74,15 +89,16 @@
       });
       // Move the original nodes rather than cloning links or replacing their listeners.
       cell.replaceChildren(container);
-      records.push({ cell, entries });
+      records.push({ cell, entries, background: {
+        value: cell.style.getPropertyValue('background-color'), priority: cell.style.getPropertyPriority('background-color'),
+      } });
     }
     render();
   }
   function render() {
     if (!panel) return;
     let hiddenCount = 0;
-    let total = 0;
-    for (const { cell, entries } of records) {
+    for (const { cell, entries, background } of records) {
       let visible = 0;
       for (const entry of entries) {
         const reason = entry.lesson && ready ? rules.reason(state, entry.lesson) : '';
@@ -91,9 +107,9 @@
         entry.wrapper.classList.toggle('tpu-divider', !entry.wrapper.hidden && visible > 0);
         if (!entry.wrapper.hidden) visible++;
         if (!entry.lesson) continue;
-        total++;
         if (reason) hiddenCount++;
-        const { hide, skip, restore, badge } = entry.controls;
+        const { bar, hide, skip, restore, badge } = entry.controls;
+        bar.hidden = Boolean(reason);
         hide.hidden = skip.hidden = Boolean(reason);
         restore.hidden = !reason;
         badge.textContent = reason;
@@ -101,8 +117,12 @@
         for (const node of [hide, skip, restore]) node.disabled = busy || !ready;
       }
       cell.classList.toggle('tpu-empty', visible === 0);
+      // Site cells use inline !important, which a stylesheet cannot override.
+      if (visible === 0) cell.style.setProperty('background-color', 'transparent', 'important');
+      else if (background.value) cell.style.setProperty('background-color', background.value, background.priority);
+      else cell.style.removeProperty('background-color');
     }
-    panel.render(state, hiddenCount, total, full);
+    panel.render(state, hiddenCount, full);
     for (const node of panel.panel.querySelectorAll('.tpu-rule button')) node.disabled = busy || !ready;
   }
   let scheduled = false;

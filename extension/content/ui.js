@@ -14,12 +14,20 @@
   function label(item) {
     return `${item.subject} · ${item.type} · ${item.teacherLabel}`;
   }
+  const plurals = new Intl.PluralRules('ru');
+  function hiddenLabel(count) {
+    const form = plurals.select(count);
+    return form === 'one' ? `Скрыта ${count} пара` : `Скрыто ${count} ${form === 'few' ? 'пары' : 'пар'}`;
+  }
   function createPanel(table, onFull, onUnhide) {
     const panel = element('section', 'tpu-panel');
     panel.setAttribute('aria-label', 'Фильтр расписания');
     const top = element('div', 'tpu-panel-top');
     const title = element('strong', '', 'Моё расписание');
     const count = element('span', 'tpu-count');
+    count.setAttribute('role', 'status');
+    count.setAttribute('aria-live', 'polite');
+    count.setAttribute('aria-atomic', 'true');
     const toggleLabel = element('label', 'tpu-toggle');
     const toggle = element('input');
     toggle.type = 'checkbox';
@@ -52,6 +60,7 @@
     panel.append(dialog);
     return {
       panel,
+      focusToggle() { toggle.focus(); },
       confirm(item, handler) {
         description.textContent = label(item);
         confirm = handler;
@@ -62,9 +71,9 @@
         error.textContent = message;
         error.hidden = !message;
       },
-      render(state, hiddenCount, total, full) {
+      render(state, hiddenCount, full) {
         toggle.checked = full;
-        count.textContent = `Скрыто: ${hiddenCount} из ${total}`;
+        count.textContent = hiddenLabel(hiddenCount);
         status.textContent = full ? 'Показаны все пары. Отмеченные занятия скрыты в вашем расписании.' :
           'Правила сохраняются в этом браузере. Для возврата пары включите полное расписание.';
         summary.textContent = `Постоянные правила (${state.rules.length})`;

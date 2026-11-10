@@ -67,7 +67,7 @@ test('parser maps rowspan correctly and preserves missing-teacher and unknown bl
   assert.equal(app.document.querySelector('#unknown').textContent, 'Неизвестный формат занятия');
   assert.equal(app.document.querySelector('#encrypted').dataset.tpuPrepared, undefined);
   assert.equal(app.document.querySelectorAll('#double a[href*="user_"]').length, 2);
-  assert.equal(app.document.querySelector('.tpu-count').textContent, 'Скрыто: 0 из 6');
+  assert.equal(app.document.querySelector('.tpu-count').textContent, 'Скрыто 0 пар');
 });
 test('hide, full view, restore, skip and disable keep exact rule scope', async t => {
   const app = setup(); t.after(() => app.dom.window.close()); await tick();
@@ -122,13 +122,13 @@ test('delayed site decryption is detected without storing encrypted names', asyn
   subject.title = 'Немецкий язык';
   subject.classList.remove('encrypt'); await tick();
   assert.equal(app.document.querySelectorAll('#encrypted .tpu-actions').length, 1);
-  assert.equal(app.document.querySelector('.tpu-count').textContent, 'Скрыто: 0 из 7');
+  assert.equal(app.document.querySelector('.tpu-count').textContent, 'Скрыто 0 пар');
 });
 test('replacement of tbody in the same table does not retain stale lessons', async t => {
   const app = setup(); t.after(() => app.dom.window.close()); await tick();
   const original = new app.window.DOMParser().parseFromString(fixture, 'text/html');
   app.document.querySelector('tbody').replaceWith(original.querySelector('tbody')); await tick();
-  assert.equal(app.document.querySelector('.tpu-count').textContent, 'Скрыто: 0 из 6');
+  assert.equal(app.document.querySelector('.tpu-count').textContent, 'Скрыто 0 пар');
   assert.equal(app.document.querySelectorAll('.tpu-panel').length, 1);
 });
 test('write failure keeps the lesson visible and reports an error', async t => {
@@ -194,4 +194,62 @@ test('hiding a teacher under a shared heading leaves the other teacher and subje
   assert.match(visible[0].textContent, /Физика 2.8 ИТ/);
   assert.match(visible[0].textContent, /Чистякова Н. В./);
   assert.equal(visible[0].classList.contains('tpu-divider'), false);
+});
+
+
+test('hidden count uses Russian forms without a schedule total', async t => {
+  const app = setup(); t.after(() => app.dom.window.close()); await tick();
+  const table = app.document.createElement('table');
+  app.document.body.append(table);
+  const panel = app.window.TpuFilter.ui.createPanel(table, () => {}, () => {});
+  for (const [count, expected] of [[0, 'Скрыто 0 пар'], [1, 'Скрыта 1 пара'], [2, 'Скрыто 2 пары'],
+    [5, 'Скрыто 5 пар'], [11, 'Скрыто 11 пар'], [21, 'Скрыта 21 пара'], [22, 'Скрыто 22 пары']]) {
+    panel.render(rules.emptyState(), count, false);
+    assert.equal(panel.panel.querySelector('.tpu-count').textContent, expected);
+  }
+  assert.equal(panel.panel.querySelector('.tpu-count').getAttribute('aria-live'), 'polite');
+});
+test('empty cells override inline important backgrounds and restore the original style', async t => {
+  for (const declaration of ['background-color: rgba(111,189,1,0.3) !important',
+    'background-color: rgb(98,130,32)', 'border: 1px solid black']) {
+    const html = fixture.replace('id="lecture"', `id="lecture" style="${declaration}"`);
+    const app = setup({ html }); t.after(() => app.dom.window.close()); await tick();
+    const cell = app.document.querySelector('#lecture');
+    const original = cell.style.getPropertyValue('background-color');
+    const priority = cell.style.getPropertyPriority('background-color');
+    const border = cell.style.border;
+    app.click(app.visible('lecture')[0], 'Пропустить пару'); await tick();
+    assert.equal(cell.style.backgroundColor, 'transparent');
+    assert.equal(cell.style.getPropertyPriority('background-color'), 'important');
+    assert.equal(cell.style.border, border);
+    app.document.querySelector('.tpu-toggle input').click(); await tick();
+    assert.equal(cell.style.backgroundColor, original);
+    assert.equal(cell.style.getPropertyPriority('background-color'), priority);
+    const restore = app.visible('lecture')[0].querySelector('.tpu-restore');
+    assert.equal(restore.hidden, false);
+    assert.equal(restore.closest('details'), null);
+    assert.equal(app.visible('lecture')[0].querySelector('.tpu-actions').hidden, true);
+    app.document.querySelector('.tpu-toggle input').click(); await tick();
+    assert.equal(cell.style.backgroundColor, 'transparent');
+    app.document.querySelector('.tpu-toggle input').click(); await tick();
+    app.click(app.visible('lecture')[0], 'Вернуть эту пару'); await tick();
+    assert.equal(cell.style.backgroundColor, original);
+    assert.equal(cell.style.getPropertyPriority('background-color'), priority);
+  }
+});
+test('successful skip closes the menu and focuses the remaining lesson or full view toggle', async t => {
+  const app = setup(); t.after(() => app.dom.window.close()); await tick();
+  const first = app.visible('double')[0];
+  const button = [...first.querySelectorAll('button')].find(node => node.textContent === 'Пропустить пару');
+  first.querySelector('details').open = true;
+  button.focus(); button.click(); await tick();
+  assert.equal(first.querySelector('details').open, false);
+  assert.equal(app.document.activeElement, app.visible('double')[0].querySelector('summary'));
+  app.click(app.visible('lecture')[0], 'Пропустить пару'); await tick();
+  assert.equal(app.document.activeElement, app.document.querySelector('.tpu-toggle input'));
+  app.document.querySelector('.tpu-toggle input').click(); await tick();
+  app.click(app.visible('lecture')[0], 'Вернуть эту пару'); await tick();
+  assert.equal(app.document.activeElement, app.visible('lecture')[0].querySelector('summary'));
+  app.click(app.visible('lecture')[0], 'Пропустить пару'); await tick();
+  assert.equal(app.document.activeElement, app.visible('lecture')[0].querySelector('.tpu-restore'));
 });
