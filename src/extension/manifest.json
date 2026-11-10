@@ -7,7 +7,7 @@
   "permissions": ["storage"],
   "browser_specific_settings": {
     "gecko": {
-      "id": "tpu-schedule-filter@local.invalid",
+      "id": "{57236907-a77f-4291-bd65-13f520af4bbc}",
       "strict_min_version": "142.0",
       "data_collection_permissions": { "required": ["none"] }
     }
