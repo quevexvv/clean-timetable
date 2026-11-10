@@ -1,4 +1,7 @@
 (() => {
+  const t = browser.i18n.getMessage.bind(browser.i18n);
+  const locale = t('locale');
+  const plurals = new Intl.PluralRules(locale);
   function element(tag, className, text) {
     const node = document.createElement(tag);
     if (className) node.className = className;
@@ -12,18 +15,18 @@
     return node;
   }
   function label(item) {
-    return `${item.subject} · ${item.type} · ${item.teacherLabel}`;
+    const instructor = item.teacherIds.length && item.teacherLabel ? item.teacherLabel : t('noInstructor');
+    return `${item.subject} · ${item.type} · ${instructor}`;
   }
-  const plurals = new Intl.PluralRules('ru');
   function hiddenLabel(count) {
-    const form = plurals.select(count);
-    return form === 'one' ? `Скрыта ${count} пара` : `Скрыто ${count} ${form === 'few' ? 'пары' : 'пар'}`;
+    return t(`hidden_${plurals.select(count)}`, String(count));
   }
   function createPanel(table, onFull, onUnhide) {
     const panel = element('section', 'tpu-panel');
-    panel.setAttribute('aria-label', 'Фильтр расписания');
+    panel.lang = locale;
+    panel.setAttribute('aria-label', t('panelLabel'));
     const top = element('div', 'tpu-panel-top');
-    const title = element('strong', '', 'Моё расписание');
+    const title = element('strong', '', t('panelTitle'));
     const count = element('span', 'tpu-count');
     count.setAttribute('role', 'status');
     count.setAttribute('aria-live', 'polite');
@@ -32,7 +35,7 @@
     const toggle = element('input');
     toggle.type = 'checkbox';
     toggle.addEventListener('change', () => onFull(toggle.checked));
-    toggleLabel.append(toggle, document.createTextNode(' Полное расписание'));
+    toggleLabel.append(toggle, document.createTextNode(` ${t('fullTimetable')}`));
     top.append(title, count, toggleLabel);
     const status = element('p', 'tpu-status');
     status.setAttribute('role', 'status');
@@ -41,7 +44,7 @@
     error.setAttribute('role', 'alert');
     error.hidden = true;
     const details = element('details', 'tpu-rules');
-    const summary = element('summary', '', 'Постоянные правила');
+    const summary = element('summary');
     const list = element('ul');
     details.append(summary, list);
     panel.append(top, status, error, details);
@@ -49,13 +52,13 @@
 
     const dialog = element('dialog', 'tpu-dialog');
     dialog.setAttribute('aria-labelledby', 'tpu-confirm-title');
-    const heading = element('h3', '', 'Скрывать такие пары всегда?');
+    const heading = element('h3', '', t('confirmTitle'));
     heading.id = 'tpu-confirm-title';
     const description = element('p', 'tpu-confirm-description');
-    const help = element('p', '', 'Будут скрыты только этот предмет, этот преподаватель и этот тип занятия на всех неделях этой группы.');
+    const help = element('p', '', t('confirmHelp'));
     let confirm = () => {};
-    const accept = button('Скрывать всегда', () => { dialog.close(); confirm(); });
-    const cancel = button('Отмена', () => dialog.close());
+    const accept = button(t('alwaysHide'), () => { dialog.close(); confirm(); });
+    const cancel = button(t('cancel'), () => dialog.close());
     dialog.append(heading, description, help, accept, cancel);
     panel.append(dialog);
     return {
@@ -74,16 +77,15 @@
       render(state, hiddenCount, full) {
         toggle.checked = full;
         count.textContent = hiddenLabel(hiddenCount);
-        status.textContent = full ? 'Показаны все пары. Отмеченные занятия скрыты в вашем расписании.' :
-          'Правила сохраняются в этом браузере. Для возврата пары включите полное расписание.';
-        summary.textContent = `Постоянные правила (${state.rules.length})`;
+        status.textContent = t(full ? 'fullStatus' : 'filteredStatus');
+        summary.textContent = t('rulesCount', String(state.rules.length));
         const active = document.activeElement;
         const focusKey = active?.dataset.tpuRule;
         list.replaceChildren();
-        if (!state.rules.length) list.append(element('li', '', 'Постоянных правил пока нет.'));
+        if (!state.rules.length) list.append(element('li', '', t('noRules')));
         for (const rule of state.rules) {
           const row = element('li', 'tpu-rule');
-          const remove = button('Отключить правило', () => onUnhide(rule));
+          const remove = button(t('disableRule'), () => onUnhide(rule));
           remove.dataset.tpuRule = globalThis.TpuFilter.rules.ruleKey(rule);
           row.append(element('span', '', label(rule)), remove);
           list.append(row);

@@ -2,6 +2,8 @@
   const { rules, parser, ui, site } = globalThis.TpuFilter;
   const group = site.groupId(location);
   if (!group || globalThis.TpuFilter.started) return;
+  const t = browser.i18n.getMessage.bind(browser.i18n);
+  const locale = t('locale');
   globalThis.TpuFilter.started = true;
   let state = rules.emptyState();
   let full = false;
@@ -13,7 +15,7 @@
   let refreshVersion = 0;
   async function request(message) {
     const response = await browser.runtime.sendMessage(message);
-    if (!response || response.error) throw new Error(response?.error || 'Фоновый обработчик недоступен.');
+    if (!response || response.error) throw new Error(response?.error || t('backgroundUnavailable'));
     return rules.validateState(response.state);
   }
   async function refresh() {
@@ -27,7 +29,7 @@
       render();
     } catch (error) {
       ready = false;
-      panel?.error(`Не удалось прочитать правила. ${error.message} Обновите страницу для повтора.`);
+      panel?.error(t('readFailed', rules.errorMessage(error, t)));
       render();
     }
   }
@@ -45,7 +47,7 @@
         if (entry.controls) entry.controls.bar.open = false;
       }
     } catch (error) {
-      panel.error(`Изменение не сохранено. ${error.message}`);
+      panel.error(t('writeFailed', rules.errorMessage(error, t)));
     } finally {
       busy = false;
       render();
@@ -61,15 +63,16 @@
   }
   function controls(item, wrapper) {
     const bar = ui.element('details', 'tpu-actions');
-    const summary = ui.element('summary', '', 'Настроить');
-    summary.setAttribute('aria-label', `Настроить пару: ${ui.label(item)}`);
+    const summary = ui.element('summary', '', t('configure'));
+    summary.setAttribute('aria-label', t('configureLesson', ui.label(item)));
     const buttons = ui.element('div', 'tpu-action-buttons');
-    const hide = ui.button('Скрывать всегда', () => panel.confirm(item, () => act('hide', item)));
-    hide.title = `Только ${ui.label(item)}`;
-    const skip = ui.button('Пропустить пару', () => act('skip', item));
-    const restore = ui.button('Вернуть эту пару', () => act('restore', item));
+    const hide = ui.button(t('alwaysHide'), () => panel.confirm(item, () => act('hide', item)));
+    hide.title = t('onlyThisLesson', ui.label(item));
+    const skip = ui.button(t('skipLesson'), () => act('skip', item));
+    const restore = ui.button(t('restoreLesson'), () => act('restore', item));
     restore.classList.add('tpu-restore');
     const badge = ui.element('span', 'tpu-badge');
+    bar.lang = badge.lang = restore.lang = locale;
     buttons.append(hide, skip);
     bar.append(summary, buttons);
     wrapper.append(badge, bar, restore);
@@ -112,7 +115,7 @@
         bar.hidden = Boolean(reason);
         hide.hidden = skip.hidden = Boolean(reason);
         restore.hidden = !reason;
-        badge.textContent = reason;
+        badge.textContent = reason ? t(reason) : '';
         badge.hidden = !reason;
         for (const node of [hide, skip, restore]) node.disabled = busy || !ready;
       }
@@ -138,7 +141,7 @@
       table = next;
       records = [];
       panel = ui.createPanel(table, value => { full = value; render(); }, item => act('unhide', item));
-      panel.error(ready ? '' : 'Загружаем локальные правила…');
+      panel.error(ready ? '' : t('loadingRules'));
     }
     prepare();
   }

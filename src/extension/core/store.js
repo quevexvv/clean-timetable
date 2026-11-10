@@ -3,7 +3,7 @@
   function createStore(storage) {
     let tail = Promise.resolve();
     function key(group) {
-      if (!/^\d+$/.test(group)) throw new Error('Неизвестная группа.');
+      if (!/^\d+$/.test(group)) throw new rules.RuleError('unknownGroup');
       return `tpuScheduleFilter:${group}`;
     }
     async function get(group) {
@@ -13,7 +13,7 @@
     }
     function update(group, action, item) {
       const operation = tail.then(async () => {
-        if (item.group !== group) throw new Error('Группа занятия не совпадает со страницей.');
+        if (item.group !== group) throw new rules.RuleError('groupMismatch');
         const state = rules.change(await get(group), action, item);
         await storage.set({ [key(group)]: state });
         return state;

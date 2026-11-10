@@ -1,17 +1,21 @@
 (() => {
   const normalize = value => String(value).normalize('NFKC').replace(/\s+/gu, ' ').trim();
   const emptyState = () => ({ version: 1, rules: [], skipped: [], allowed: [] });
+  class RuleError extends Error {}
+  function errorMessage(error, translate) {
+    return error instanceof RuleError ? translate(error.message) : error.message;
+  }
   function lesson(value) {
     if (!value || !/^\d+$/.test(value.group) || typeof value.subject !== 'string' ||
         !normalize(value.subject) || value.subject.length > 2000 ||
         typeof value.type !== 'string' || !normalize(value.type) || value.type.length > 100 ||
         !Array.isArray(value.teacherIds) || value.teacherIds.some(id => !/^\d+$/.test(id))) {
-      throw new Error('Некорректные данные занятия. Обновите страницу.');
+      throw new RuleError('invalidLesson');
     }
     return {
       group: value.group, subject: normalize(value.subject), type: normalize(value.type),
       teacherIds: [...new Set(value.teacherIds)].sort(),
-      teacherLabel: normalize(value.teacherLabel || 'Преподаватель не указан').slice(0, 1000),
+      teacherLabel: normalize(value.teacherLabel || '').slice(0, 1000),
       date: value.date, time: value.time,
     };
   }
@@ -21,7 +25,7 @@
   }
   function occurrenceKey(value) {
     if (!/^\d{4}-\d{2}-\d{2}$/.test(value.date) || !/^\d{2}:\d{2}$/.test(value.time)) {
-      throw new Error('Не удалось определить дату и время занятия.');
+      throw new RuleError('missingDateTime');
     }
     return JSON.stringify([ruleKey(value), value.date, value.time]);
   }
@@ -29,7 +33,7 @@
     if (!value || value.version !== 1 || !Array.isArray(value.rules) ||
         !Array.isArray(value.skipped) || !Array.isArray(value.allowed) ||
         [...value.skipped, ...value.allowed].some(key => typeof key !== 'string')) {
-      throw new Error('Формат сохранённых правил не поддерживается. Данные не изменены.');
+      throw new RuleError('unsupportedRules');
     }
     value.rules.forEach(ruleKey);
     for (const entry of [...value.skipped, ...value.allowed]) {
@@ -39,15 +43,15 @@
         const [group, subject, teacherIds, type] = JSON.parse(key);
         valid = occurrenceKey({ group, subject, teacherIds, type, date, time }) === entry;
       } catch { /* Malformed saved exceptions must not be overwritten. */ }
-      if (!valid) throw new Error('Сохранённые исключения повреждены. Данные не изменены.');
+      if (!valid) throw new RuleError('invalidExceptions');
     }
     return value;
   }
   function reason(state, item) {
     const occurrence = occurrenceKey(item);
     if (state.allowed.includes(occurrence)) return '';
-    if (state.skipped.includes(occurrence)) return 'Пропущено это занятие';
-    if (state.rules.some(rule => ruleKey(rule) === ruleKey(item))) return 'Скрыто постоянным правилом';
+    if (state.skipped.includes(occurrence)) return 'skippedLesson';
+    if (state.rules.some(rule => ruleKey(rule) === ruleKey(item))) return 'hiddenByRule';
     return '';
   }
   function change(state, action, value) {
@@ -71,10 +75,10 @@
       next.allowed = next.allowed.filter(entry => entry !== occurrence);
       if (action === 'skip') next.skipped.push(occurrence);
       else if (next.rules.some(rule => ruleKey(rule) === key)) next.allowed.push(occurrence);
-    } else throw new Error('Неизвестное действие.');
+    } else throw new RuleError('unknownAction');
     return next;
   }
-  const api = { normalize, lesson, emptyState, validateState, ruleKey, occurrenceKey, reason, change };
+  const api = { RuleError, errorMessage, normalize, lesson, emptyState, validateState, ruleKey, occurrenceKey, reason, change };
   (globalThis.TpuFilter ||= {}).rules = api;
   if (typeof module !== 'undefined') module.exports = api;
 })();

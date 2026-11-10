@@ -37,7 +37,7 @@
     return {
       ...context, subject, type,
       teacherIds: [...new Set(teachers.map(teacher => teacher.id))].sort(),
-      teacherLabel: teachers.map(teacher => teacher.label).join(', ') || 'Преподаватель не указан',
+      teacherLabel: teachers.map(teacher => teacher.label).join(', '),
     };
   }
   function parse(table, group) {

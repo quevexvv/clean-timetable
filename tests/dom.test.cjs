@@ -5,13 +5,14 @@ const { join } = require('node:path');
 const { JSDOM } = require('jsdom');
 const rules = require('../src/extension/core/rules.js');
 const createStore = require('../src/extension/core/store.js');
+const mockI18n = require('./helpers/i18n.cjs');
 require('../src/extension/core/site.js');
 const fixture = readFileSync(join(__dirname, 'fixtures/week.html'), 'utf8');
 const manifest = require('../src/extension/manifest.json');
 const scripts = manifest.content_scripts[0].js;
 const tick = async () => { for (let i = 0; i < 4; i++) await new Promise(resolve => setImmediate(resolve)); };
 const groupUrl = (host = 'my-rasp', week = 10) => `https://${host}.tpu.ru/gruppa_44510/2026/${week}/view.html`;
-function setup({ url = groupUrl(), failRead = false, failWrite = false, html = fixture, data = {} } = {}) {
+function setup({ url = groupUrl(), failRead = false, failWrite = false, html = fixture, data = {}, locale } = {}) {
   const dom = new JSDOM(html, { url, runScripts: 'outside-only' });
   const { window } = dom;
   const listeners = [];
@@ -29,6 +30,7 @@ function setup({ url = groupUrl(), failRead = false, failWrite = false, html = f
   window.HTMLDialogElement.prototype.showModal = function () { this.open = true; };
   window.HTMLDialogElement.prototype.close = function () { this.open = false; };
   window.browser = {
+    i18n: mockI18n(locale),
     runtime: { async sendMessage(message) {
       messages.push(message);
       try { return { state: message.kind === 'tpu:get' ? await store.get('44510') : await store.update('44510', message.action, message.lesson) }; }
@@ -232,6 +234,32 @@ test('hidden count uses Russian forms without a schedule total', async t => {
     assert.equal(panel.panel.querySelector('.tpu-count').textContent, expected);
   }
   assert.equal(panel.panel.querySelector('.tpu-count').getAttribute('aria-live'), 'polite');
+});
+test('English locale translates the panel, lesson actions, and hidden badges', async t => {
+  const app = setup({ locale: 'en-GB' });
+  t.after(() => app.dom.window.close());
+  await tick();
+  assert.equal(app.document.querySelector('.tpu-panel').lang, 'en');
+  assert.equal(app.document.querySelector('.tpu-panel strong').textContent, 'My timetable');
+  assert.equal(app.document.querySelector('.tpu-count').textContent, '0 classes hidden');
+
+  const [lesson] = app.visible('double');
+  assert.match(lesson.querySelector('summary').getAttribute('aria-label'), /^Configure class: Английский язык/);
+  app.click(lesson, 'Skip this class');
+  await tick();
+  assert.equal(app.document.querySelector('.tpu-count').textContent, '1 class hidden');
+  app.document.querySelector('.tpu-toggle input').click();
+  assert.equal(lesson.querySelector('.tpu-badge').textContent, 'Skipped this class');
+  app.click(lesson, 'Restore this class');
+  await tick();
+  assert.equal(app.document.querySelector('.tpu-count').textContent, '0 classes hidden');
+});
+test('an unsupported browser locale falls back to Russian', async t => {
+  const app = setup({ locale: 'fr' });
+  t.after(() => app.dom.window.close());
+  await tick();
+  assert.equal(app.document.querySelector('.tpu-panel').lang, 'ru');
+  assert.equal(app.document.querySelector('.tpu-panel strong').textContent, 'Моё расписание');
 });
 test('empty cells drop only the subject tint and restore the original style', async t => {
   for (const declaration of ['background-color: rgba(111,189,1,0.3) !important',

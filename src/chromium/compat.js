@@ -3,9 +3,10 @@
   const chromeApi = globalThis.chrome;
   if (globalThis.browser || !chromeApi) return;
   if (!chromeApi.runtime) {
-    globalThis.browser = { storage: chromeApi.storage };
+    globalThis.browser = { storage: chromeApi.storage, i18n: chromeApi.i18n };
     return;
   }
+  const unavailable = () => ({ error: chromeApi.i18n.getMessage('backgroundUnavailable') });
   const runtime = Object.create(chromeApi.runtime);
   if (typeof chromeApi.runtime.sendMessage === 'function') {
     runtime.sendMessage = chromeApi.runtime.sendMessage.bind(chromeApi.runtime);
@@ -23,13 +24,13 @@
         try {
           result = listener(message, sender, sendResponse);
         } catch {
-          sendResponse({ error: 'Фоновый обработчик недоступен.' });
+          sendResponse(unavailable());
           return false;
         }
         if (!result || typeof result.then !== 'function') return result;
         result.then(
           value => sendResponse(value),
-          () => sendResponse({ error: 'Фоновый обработчик недоступен.' }),
+          () => sendResponse(unavailable()),
         );
         return true;
       };
@@ -43,5 +44,5 @@
       hasListeners() { return Boolean(source.hasListeners && source.hasListeners()); },
     };
   }
-  globalThis.browser = { storage: chromeApi.storage, runtime };
+  globalThis.browser = { storage: chromeApi.storage, i18n: chromeApi.i18n, runtime };
 })();

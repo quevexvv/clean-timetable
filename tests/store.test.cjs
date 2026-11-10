@@ -36,7 +36,7 @@ test('future schema, corrupted rules and mismatched groups are not overwritten',
   const adapter = storage();
   adapter.data['tpuScheduleFilter:44510'] = { version: 2 };
   const store = createStore(adapter);
-  await assert.rejects(store.update('44510', 'hide', base), /Формат/);
+  await assert.rejects(store.update('44510', 'hide', base), /unsupportedRules/);
   assert.deepEqual(adapter.data['tpuScheduleFilter:44510'], { version: 2 });
-  await assert.rejects(store.update('44511', 'hide', base), /Группа/);
+  await assert.rejects(store.update('44511', 'hide', base), /groupMismatch/);
 });

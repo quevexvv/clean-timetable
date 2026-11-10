@@ -3,10 +3,12 @@ const assert = require('node:assert/strict');
 const vm = require('node:vm');
 const { readFileSync } = require('node:fs');
 const { join } = require('node:path');
+const mockI18n = require('./helpers/i18n.cjs');
 function background() {
   let handler;
   const data = {};
   const browser = {
+    i18n: mockI18n(),
     runtime: { id: 'test@local.invalid', onMessage: { addListener(fn) { handler = fn; } } },
     storage: { local: {
       async get(key) { return structuredClone({ [key]: data[key] }); },

@@ -4,6 +4,7 @@ const { mkdtempSync, readFileSync, rmSync } = require('node:fs');
 const { tmpdir } = require('node:os');
 const { join } = require('node:path');
 const vm = require('node:vm');
+const mockI18n = require('./helpers/i18n.cjs');
 const { buildChromium, createChromiumManifest } = require('../scripts/build-chromium.cjs');
 
 const src = join(__dirname, '../src');
@@ -13,6 +14,7 @@ const tick = () => new Promise(resolve => setImmediate(resolve));
 function loadCompat(existingBrowser) {
   const listeners = [];
   const chromeApi = {
+    i18n: mockI18n('en'),
     runtime: { id: 'test-extension', onMessage: { addListener(listener) { listeners.push(listener); } } },
     storage: { local: {} },
   };
@@ -26,6 +28,7 @@ test('chromium compat exposes browser and adapts Promise listeners to sendRespon
   const nativeAddListener = chromeApi.runtime.onMessage.addListener;
   assert.equal(context.browser.runtime.id, chromeApi.runtime.id);
   assert.equal(context.browser.storage, chromeApi.storage);
+  assert.equal(context.browser.i18n, chromeApi.i18n);
   assert.equal(chromeApi.runtime.onMessage.addListener, nativeAddListener);
   const seen = [];
   context.browser.runtime.onMessage.addListener((message, sender) => {
@@ -45,7 +48,7 @@ test('chromium compat exposes browser and adapts Promise listeners to sendRespon
   context.browser.runtime.onMessage.addListener(() => Promise.reject(new Error('no access')));
   listeners[1]({}, {}, value => { failed = value; });
   await tick();
-  assert.equal(failed.error, 'Фоновый обработчик недоступен.');
+  assert.equal(failed.error, 'The extension’s background process is unavailable.');
 });
 
 test('chromium compat leaves plain listeners and Firefox browser objects alone', () => {
@@ -66,6 +69,7 @@ test('built Chromium service worker answers messages through the Chrome API shim
     const listeners = [];
     const data = {};
     const chromeApi = {
+      i18n: mockI18n('en'),
       runtime: { id: 'test-extension', onMessage: { addListener(listener) { listeners.push(listener); } } },
       storage: { local: {
         async get(key) { return { [key]: data[key] }; },
@@ -114,7 +118,8 @@ test('chromium manifest keeps shared sources and swaps only Chromium entry point
 
 test('chromium build output has the expected Chromium entry points', () => {
   const files = ['manifest.json', 'background.js', 'core/site.js', 'core/rules.js', 'core/store.js',
-    'content/parser.js', 'content/ui.js', 'content/app.js', 'content/styles.css'];
+    'content/parser.js', 'content/ui.js', 'content/app.js', 'content/styles.css',
+    '_locales/ru/messages.json', '_locales/en/messages.json'];
   const before = files.map(file => readFileSync(join(src, 'extension', file), 'utf8'));
   const temp = mkdtempSync(join(tmpdir(), 'tpu-chromium-'));
   try {
@@ -124,7 +129,7 @@ test('chromium build output has the expected Chromium entry points', () => {
     assert.deepEqual(after, before);
     assert.equal(manifest.background.service_worker, 'chromium-background.js');
     assert.match(readFileSync(join(outDir, 'chromium-compat.js'), 'utf8'),
-      /globalThis\.browser = \{ storage: chromeApi\.storage, runtime \}/);
+      /globalThis\.browser = \{ storage: chromeApi\.storage, i18n: chromeApi\.i18n, runtime \}/);
     assert.match(readFileSync(join(outDir, 'chromium-background.js'), 'utf8'),
       /importScripts\('chromium-compat\.js', 'core\/site\.js', 'core\/rules\.js', 'core\/store\.js', 'background\.js'\)/);
     for (const file of files.filter(name => name !== 'manifest.json')) {

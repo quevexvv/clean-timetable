@@ -52,7 +52,7 @@ test('new permanent hide clears prior per-occurrence restores; input is not muta
 });
 test('invalid and future data are rejected', () => {
   assert.throws(() => rules.validateState({ version: 2 }));
-  assert.throws(() => rules.validateState({ ...rules.emptyState(), allowed: ['not json'] }), /повреждены/);
+  assert.throws(() => rules.validateState({ ...rules.emptyState(), allowed: ['not json'] }), /invalidExceptions/);
   assert.throws(() => rules.ruleKey({ ...base, subject: '' }));
   assert.throws(() => rules.change(rules.emptyState(), 'skip', { ...base, date: undefined }));
   assert.throws(() => rules.change(rules.emptyState(), 'anything', base));
