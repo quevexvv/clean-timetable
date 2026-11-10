@@ -74,7 +74,7 @@ test('parser maps rowspan correctly and preserves missing-teacher and unknown bl
 test('hide, full view, restore, skip and disable keep exact rule scope', async t => {
   const app = setup(); t.after(() => app.dom.window.close()); await tick();
   app.click(app.visible('double')[0], 'Скрывать всегда');
-  assert.match(app.document.querySelector('.tpu-confirm-description').textContent, /Английский язык · ПР · Ануфриева/);
+  assert.match(app.document.querySelector('.tpu-confirm-description').textContent, /Английский язык · ПР · Орлова/);
   app.click(app.document.querySelector('dialog'), 'Скрывать всегда'); await tick();
   assert.equal(app.visible('double').length, 1);
   assert.equal(app.visible('repeat').length, 0);
@@ -106,18 +106,18 @@ test('ro-rasp reuses exact my-rasp rules and recognizes links on both TPU hosts'
   await tick();
 
   const html = fixture
-    .replace('href="/user_57063/', 'href="https://ro-rasp.tpu.ru/user_57063/')
-    .replace('href="/user_109784/', 'href="https://my-rasp.tpu.ru/user_109784/');
+    .replace('href="/user_101/', 'href="https://ro-rasp.tpu.ru/user_101/')
+    .replace('href="/user_102/', 'href="https://my-rasp.tpu.ru/user_102/');
   const app = setup({ url: groupUrl('ro-rasp'), html, data: original.data });
   t.after(() => app.dom.window.close());
   await tick();
   assert.equal(app.document.querySelectorAll('.tpu-panel').length, 1);
-  assert.match(app.visible('double')[0].textContent, /Макаровских/);
+  assert.match(app.visible('double')[0].textContent, /Соколова/);
   assert.equal(app.visible('double').length, 1);
   assert.equal(app.visible('repeat').length, 0);
   assert.equal(app.visible('lecture').length, 1);
   app.click(app.visible('double')[0], 'Скрывать всегда');
-  assert.match(app.document.querySelector('.tpu-confirm-description').textContent, /Макаровских/);
+  assert.match(app.document.querySelector('.tpu-confirm-description').textContent, /Соколова/);
   app.click(app.document.querySelector('dialog'), 'Отмена');
 
   app.document.querySelector('.tpu-toggle input').click();
@@ -177,7 +177,7 @@ test('read failure leaves lessons visible and disables unsafe edits', async t =>
   assert.match(app.document.querySelector('.tpu-error').textContent, /read denied/);
 });
 test('content script leaves other pages untouched', async t => {
-  const app = setup({ url: 'https://my-rasp.tpu.ru/user_57063/2026/10/view.html' });
+  const app = setup({ url: 'https://my-rasp.tpu.ru/user_101/2026/10/view.html' });
   t.after(() => app.dom.window.close()); await tick();
   assert.equal(app.document.querySelector('.tpu-panel'), null);
   assert.equal(app.messages.length, 0);
@@ -188,44 +188,35 @@ test('date parsing validates actual dates and supports a year boundary', () => {
   assert.equal(dateFrom('01.01.27'), '2027-01-01');
   assert.equal(dateFrom('31.02.26'), null);
 });
-test('real week snapshots parse every lesson and carry a rule across weeks', t => {
+test('recurring rules follow the timetable across weeks while a skip stays on its date', t => {
   const { parse } = require('../src/extension/content/parser.js');
-  const all = [];
-  for (const week of [10, 11]) {
-    const dom = new JSDOM(readFileSync(join(__dirname, `fixtures/tpu-week${week}.html`), 'utf8'),
-      { url: groupUrl('my-rasp', week) });
+  function readWeek(html, week) {
+    const dom = new JSDOM(html, { url: groupUrl('my-rasp', week) });
     t.after(() => dom.window.close());
     const records = parse(dom.window.document.querySelector('table'), '44510');
-    const lessons = records.flatMap(record => record.blocks.map(block => block.lesson));
-    assert.equal(lessons.length, week === 10 ? 30 : 31);
-    assert.ok(lessons.every(Boolean));
-    assert.equal(lessons.filter(item => item.subject === 'Операционные системы').every(item => item.teacherIds.includes('61829')), true);
-    all.push(lessons);
+    return records.flatMap(record => record.blocks.flatMap(block => block.lesson ? [block.lesson] : []));
   }
-  const physics = all[1].filter(item => item.subject === 'Физика 2.8 для ИТ' && item.type === 'ЛБ');
-  assert.equal(physics.length, 2);
-  assert.deepEqual(physics.map(item => item.teacherIds), [['60941'], ['58910']]);
-  const oneTeacher = rules.change(rules.emptyState(), 'hide', physics[0]);
-  assert.ok(rules.reason(oneTeacher, physics[0]));
-  assert.equal(rules.reason(oneTeacher, physics[1]), '');
-  const english = all[0].find(item => item.teacherIds.includes('109784'));
-  const hidden = rules.change(rules.emptyState(), 'hide', english);
-  assert.equal(all[0].filter(item => rules.reason(hidden, item)).length, 2);
-  assert.equal(all[1].filter(item => rules.reason(hidden, item)).length, 3);
-  assert.equal(all[1].filter(item => rules.reason(rules.change(rules.emptyState(), 'skip', english), item)).length, 0);
+  const current = readWeek(fixture, 10);
+  const next = readWeek(fixture.replace(/\b0([2-5])(?=\.11\.26\b)/g, (_, day) => String(Number(day) + 7).padStart(2, '0')), 11);
+  const practice = current.find(item => item.type === 'ПР' && item.teacherIds.includes('101'));
+  const hidden = rules.change(rules.emptyState(), 'hide', practice);
+  const skipped = rules.change(rules.emptyState(), 'skip', practice);
+  assert.deepEqual(current.filter(item => rules.reason(hidden, item)).map(item => item.date), ['2026-11-02', '2026-11-05']);
+  assert.deepEqual(next.filter(item => rules.reason(hidden, item)).map(item => item.date), ['2026-11-09', '2026-11-12']);
+  assert.deepEqual(current.filter(item => rules.reason(skipped, item)), [practice]);
+  assert.equal(next.some(item => rules.reason(skipped, item)), false);
 });
 test('hiding a teacher under a shared heading leaves the other teacher and subject visible', async t => {
-  const html = readFileSync(join(__dirname, 'fixtures/tpu-week11.html'), 'utf8');
-  const app = setup({ html, url: 'https://my-rasp.tpu.ru/gruppa_44510/2026/11/view.html' });
+  const app = setup();
   t.after(() => app.dom.window.close()); await tick();
-  const cell = [...app.document.querySelectorAll('td.cell')].find(node => node.textContent.includes('Склярова Е. А.'));
-  const first = cell.querySelector('.tpu-lesson');
+  assert.equal(app.visible('shared-lab').length, 2);
+  const [first] = app.visible('shared-lab');
   app.click(first, 'Скрывать всегда');
   app.click(app.document.querySelector('dialog'), 'Скрывать всегда'); await tick();
-  const visible = [...cell.querySelectorAll('.tpu-lesson')].filter(node => !node.hidden);
+  const visible = app.visible('shared-lab');
   assert.equal(visible.length, 1);
-  assert.match(visible[0].textContent, /Физика 2.8 ИТ/);
-  assert.match(visible[0].textContent, /Чистякова Н. В./);
+  assert.match(visible[0].textContent, /Физика/);
+  assert.match(visible[0].textContent, /Волкова Е\. А\./);
   assert.equal(visible[0].classList.contains('tpu-divider'), false);
 });
 
