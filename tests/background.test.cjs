@@ -37,6 +37,7 @@ test('toolbar click targets only the clicked tab and tolerates pages without a r
   await click({ id: 0 });
   await click({ id: 5 });
   await click({});
+  await click(null);
   assert.deepEqual(sent, [0, 5].map(id => ({ id, message: { kind: 'tpu:toggle-panel' }, options: { frameId: 0 } })));
 });
 test('background rejects other origins, pages, senders and cross-group writes', async () => {
