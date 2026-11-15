@@ -3,6 +3,8 @@
   "extensionDescription": { "message": "Remove unwanted classes from your TPU timetable. Hide one class or set a recurring rule." },
   "panelLabel": { "message": "Timetable filter" },
   "panelTitle": { "message": "My timetable" },
+  "togglePanel": { "message": "Show or hide the My timetable panel" },
+  "panelUnavailable": { "message": "Open a TPU group timetable. If it is already open, check the extension’s site access and reload the tab." },
   "fullTimetable": { "message": "Full timetable" },
   "hidden_one": { "message": "$VALUE$ class hidden", "placeholders": { "value": { "content": "$1" } } },
   "hidden_other": { "message": "$VALUE$ classes hidden", "placeholders": { "value": { "content": "$1" } } },

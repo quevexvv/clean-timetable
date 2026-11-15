@@ -68,7 +68,16 @@ test('built Chromium service worker answers messages through the Chrome API shim
     buildChromium({ outDir });
     const listeners = [];
     const data = {};
+    let click;
+    const sent = [];
+    const badges = [];
     const chromeApi = {
+      action: {
+        onClicked: { addListener(listener) { click = listener; } },
+        async setBadgeText(details) { badges.push(structuredClone(details)); },
+        async setTitle() {},
+      },
+      tabs: { async sendMessage(id, message) { sent.push(structuredClone({ id, message })); } },
       i18n: mockI18n('en'),
       runtime: { id: 'test-extension', onMessage: { addListener(listener) { listeners.push(listener); } } },
       storage: { local: {
@@ -94,6 +103,9 @@ test('built Chromium service worker answers messages through the Chrome API shim
     assert.equal(response.state.version, 1);
     assert.equal(response.state.rules.length, 0);
     assert.equal(response.state.skipped.length, 0);
+    await click({ id: 3 });
+    assert.deepEqual(sent, [{ id: 3, message: { kind: 'tpu:toggle-panel' } }]);
+    assert.deepEqual(badges, [{ tabId: 3, text: '!' }]);
   } finally {
     rmSync(temp, { recursive: true, force: true });
   }
@@ -107,6 +119,9 @@ test('chromium manifest keeps shared sources and swaps only Chromium entry point
   assert.equal(manifest.browser_specific_settings, undefined);
   assert.deepEqual(manifest.background, { service_worker: 'chromium-background.js' });
   assert.equal(manifest.minimum_chrome_version, '109');
+  assert.deepEqual(manifest.action, original.action);
+  assert.equal(manifest.action.default_title, '__MSG_togglePanel__');
+  assert.equal(manifest.action.default_popup, undefined);
   assert.deepEqual(manifest.content_scripts[0].js,
     ['chromium-compat.js', ...original.content_scripts[0].js]);
   assert.deepEqual(manifest.content_scripts[0].matches, original.content_scripts[0].matches);
@@ -128,8 +143,7 @@ test('chromium build output has the expected Chromium entry points', () => {
     const after = files.map(file => readFileSync(join(src, 'extension', file), 'utf8'));
     assert.deepEqual(after, before);
     assert.equal(manifest.background.service_worker, 'chromium-background.js');
-    assert.match(readFileSync(join(outDir, 'chromium-compat.js'), 'utf8'),
-      /globalThis\.browser = \{ storage: chromeApi\.storage, i18n: chromeApi\.i18n, runtime \}/);
+    assert.equal(readFileSync(join(outDir, 'chromium-compat.js'), 'utf8'), compatSource);
     assert.match(readFileSync(join(outDir, 'chromium-background.js'), 'utf8'),
       /importScripts\('chromium-compat\.js', 'core\/site\.js', 'core\/rules\.js', 'core\/store\.js', 'background\.js'\)/);
     for (const file of files.filter(name => name !== 'manifest.json')) {

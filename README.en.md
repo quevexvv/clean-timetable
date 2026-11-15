@@ -12,10 +12,10 @@ The extension follows your browser language. It supports Russian and English and
 
 ## Release downloads
 
-The [v1.0.0 release](https://github.com/quevexvv/clean-timetable/releases/tag/v1.0.0) includes two ZIP archives. Installing from a ZIP requires no Node.js setup.
+The [v1.1.0 release](https://github.com/quevexvv/clean-timetable/releases/tag/v1.1.0) includes two ready-to-install ZIP archives. Installing from a ZIP requires no Node.js setup.
 
-- [Firefox ZIP](https://github.com/quevexvv/clean-timetable/releases/download/v1.0.0/tpu-schedule-filter-firefox-1.0.0.zip) — load it through `about:debugging` for a temporary installation.
-- [Chromium ZIP](https://github.com/quevexvv/clean-timetable/releases/download/v1.0.0/tpu-schedule-filter-chromium-1.0.0.zip) — extract it and load the folder containing `manifest.json` in developer mode.
+- [Firefox ZIP](https://github.com/quevexvv/clean-timetable/releases/download/v1.1.0/tpu-schedule-filter-firefox-1.1.0.zip) for temporary installation through `about:debugging`.
+- [Chromium ZIP](https://github.com/quevexvv/clean-timetable/releases/download/v1.1.0/tpu-schedule-filter-chromium-1.1.0.zip) for Chrome, Edge, and other Chromium-based browsers. Extract it and load the folder containing `manifest.json` in developer mode.
 
 [Firefox guide](docs/en/firefox.md) · [Chromium guide](docs/en/chromium.md)
 
@@ -25,18 +25,18 @@ Use Node.js 22.23.1 or later and run `npm ci` from the repository root. Build th
 
 | Browser                                                                  | Command                  | Load this build                                                                                                    |
 | ------------------------------------------------------------------------ | ------------------------ | ------------------------------------------------------------------------------------------------------------------ |
-| Firefox, Firefox ESR, Zen, LibreWolf, Waterfox, and Floorp on Gecko 142+ | `npm run build:firefox`  | Open `about:debugging`, choose **Load Temporary Add-on**, and select `dist/tpu-schedule-filter-firefox-1.0.0.zip`. |
+| Firefox, Firefox ESR, Zen, LibreWolf, Waterfox, and Floorp on Gecko 142+ | `npm run build:firefox`  | Open `about:debugging`, choose **Load Temporary Add-on**, and select the Firefox ZIP you built in `dist/`. |
 | Chrome, Edge, and other Chromium 109+ browsers                           | `npm run build:chromium` | Open the browser’s extensions page, enable developer mode, and select `dist/chromium/` with **Load unpacked**.     |
-
-Reload your group timetable. Look for **My timetable** above the table. Permanent installation in Firefox requires a signed add-on.
 
 ## Use the filter
 
-Open **Configure** under a class.
+Reload your group timetable. The **My timetable** panel starts hidden. Click the extension icon to open or close it above the table. You can pin the icon from the browser’s extensions menu.
+
+To hide a class, open **Configure** below it.
 
 - **Always hide** matches the subject, instructor, and class type across weeks for the same group. A lecture and a lab count as different classes.
 - **Skip this class** hides one occurrence at the selected date and time.
-- **Full timetable** shows hidden classes. **Restore this class** restores one occurrence and keeps the recurring rule in place.
+- The **Full timetable** switch in the panel shows hidden classes. **Restore this class** restores one occurrence and keeps the recurring rule in place.
 
 Remove a recurring rule under **Recurring rules**. One-off skips remain in effect. The filter changes how your group's timetable appears in the browser.
 
