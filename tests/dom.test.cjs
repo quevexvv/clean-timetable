@@ -120,8 +120,14 @@ test('hide, full view, restore, skip and disable keep exact rule scope', async t
   assert.equal(app.document.querySelector('#double hr'), null);
   const saved = JSON.stringify(app.data);
   app.toolbarClick();
-  const toggle = app.document.querySelector('.tpu-toggle input');
-  toggle.click(); await tick();
+  const label = app.document.querySelector('.tpu-toggle');
+  const toggle = label.querySelector('input[role="switch"]');
+  assert.equal(toggle.type, 'checkbox');
+  assert.equal(toggle.labels[0], label);
+  assert.equal(label.textContent, 'Полное расписание');
+  assert.equal(toggle.checked, false);
+  label.click(); await tick();
+  assert.equal(toggle.checked, true);
   assert.equal(app.visible('double').length, 2);
   assert.equal(JSON.stringify(app.data), saved);
   app.click(app.visible('double')[0], 'Вернуть эту пару'); await tick();

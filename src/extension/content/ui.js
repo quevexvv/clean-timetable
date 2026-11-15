@@ -34,8 +34,11 @@
     const toggleLabel = element('label', 'tpu-toggle');
     const toggle = element('input');
     toggle.type = 'checkbox';
+    toggle.setAttribute('role', 'switch');
     toggle.addEventListener('change', () => onFull(toggle.checked));
-    toggleLabel.append(toggle, document.createTextNode(` ${t('fullTimetable')}`));
+    const track = element('span', 'tpu-switch-track');
+    track.setAttribute('aria-hidden', 'true');
+    toggleLabel.append(toggle, track, element('span', '', t('fullTimetable')));
     top.append(title, count, toggleLabel);
     const status = element('p', 'tpu-status');
     status.setAttribute('role', 'status');
