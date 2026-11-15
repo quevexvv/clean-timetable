@@ -38,4 +38,4 @@ npm ci
 npm run build:firefox
 ```
 
-В `dist/` появятся архив `tpu-schedule-filter-firefox-1.0.0.zip` и распакованная сборка `firefox/`. Для временной установки откройте страницу из шага 2 и выберите собранный ZIP или `dist/firefox/manifest.json`.
+В `dist/` появятся ZIP-архив с номером версии в названии и распакованная сборка `firefox/`. Для временной установки откройте страницу из шага 2 и выберите собранный ZIP или `dist/firefox/manifest.json`.

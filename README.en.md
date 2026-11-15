@@ -25,7 +25,7 @@ Use Node.js 22.23.1 or later and run `npm ci` from the repository root. Build th
 
 | Browser                                                                  | Command                  | Load this build                                                                                                    |
 | ------------------------------------------------------------------------ | ------------------------ | ------------------------------------------------------------------------------------------------------------------ |
-| Firefox, Firefox ESR, Zen, LibreWolf, Waterfox, and Floorp on Gecko 142+ | `npm run build:firefox`  | Open `about:debugging`, choose **Load Temporary Add-on**, and select `dist/tpu-schedule-filter-firefox-1.0.0.zip`. |
+| Firefox, Firefox ESR, Zen, LibreWolf, Waterfox, and Floorp on Gecko 142+ | `npm run build:firefox`  | Open `about:debugging`, choose **Load Temporary Add-on**, and select the Firefox ZIP you built in `dist/`. |
 | Chrome, Edge, and other Chromium 109+ browsers                           | `npm run build:chromium` | Open the browser’s extensions page, enable developer mode, and select `dist/chromium/` with **Load unpacked**.     |
 
 Reload your group timetable. Click the extension icon to open or close the **My timetable** panel above the table. You can pin the icon from the browser’s extensions menu. Permanent installation in Firefox requires a signed add-on.

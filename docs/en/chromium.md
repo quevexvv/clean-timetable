@@ -26,7 +26,7 @@ Go to either timetable site, find your group, and open its timetable. If the tim
 
 In the current source build, click the extension icon to open or close the **My timetable** panel. In Chrome, open the extensions menu and click the pin next to **Clean Timetable for TPU**. In the v1.0.0 release, the panel is shown above the table by default. [Chrome Help](https://support.google.com/chrome_webstore/answer/2664769?hl=en)
 
-If the controls below classes are missing, grant the extension access to the timetable site and reload the tab.
+The `!` badge means the panel is unavailable for this tab. Open a group timetable. If it is already open, check the extension’s site access and reload the tab.
 
 ## Build from source
 
@@ -39,4 +39,4 @@ After building, `dist/` contains a ZIP archive and an unpacked `chromium/` direc
 
 ## Update
 
-Extract the new ZIP into the installed extension’s folder or rebuild from source. Then reload the extension on the extensions page and refresh the timetable tab.
+Extract the new ZIP over the files in the installed extension’s folder or rebuild from source. Then click the reload button on the extension’s card and check the version number. Reload the timetable tab so Chrome can load the new scripts.

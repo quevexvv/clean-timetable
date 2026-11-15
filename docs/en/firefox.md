@@ -38,4 +38,4 @@ npm ci
 npm run build:firefox
 ```
 
-After building, `dist/` contains `tpu-schedule-filter-firefox-1.0.0.zip` and an unpacked `firefox/` directory. For a temporary installation, open the page from step 2 and select the ZIP you built or `dist/firefox/manifest.json`.
+After building, `dist/` contains a ZIP archive with the version in its filename and an unpacked `firefox/` directory. For a temporary installation, open the page from step 2 and select the ZIP you built or `dist/firefox/manifest.json`.
