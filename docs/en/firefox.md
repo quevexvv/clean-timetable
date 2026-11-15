@@ -12,7 +12,7 @@ You can also install a Mozilla-signed XPI using **Install Add-on From File** on 
 
 ## Install the release ZIP
 
-1. Download the [Firefox ZIP from the v1.0.0 release](https://github.com/quevexvv/clean-timetable/releases/download/v1.0.0/tpu-schedule-filter-firefox-1.0.0.zip). If you already downloaded it, start at step 2.
+1. Download the [Firefox ZIP from the v1.1.0 release](https://github.com/quevexvv/clean-timetable/releases/download/v1.1.0/tpu-schedule-filter-firefox-1.1.0.zip).
 2. Paste `about:debugging#/runtime/this-firefox` into the browser's address bar and press Enter.
 3. Select **Load Temporary Add-on…**.
 4. In the file picker, open the folder where your browser saved the archive. Select the downloaded Firefox ZIP without extracting it. **Clean Timetable for TPU** should appear on the page.
@@ -25,9 +25,9 @@ A temporary add-on stays loaded until you restart the browser. [Mozilla instruct
 
 Go to either timetable site, find your group, and open its timetable. If the timetable is already open, reload the tab. To hide a class, select **Configure** below it, then choose **Skip this class** or **Always hide**. [my-rasp](https://my-rasp.tpu.ru/) · [ro-rasp](https://ro-rasp.tpu.ru/)
 
-In the current source build, click the extension icon to open or close the **My timetable** panel. Open the extensions menu, click the menu button next to **Clean Timetable for TPU**, and choose **Pin to Toolbar**. In the v1.0.0 release, the panel is shown above the table by default. [Firefox Help](https://support.mozilla.org/en-US/kb/extensions-button)
+The **My timetable** panel starts hidden. Click the extension icon to open or close it above the table. To pin the icon, open the extensions menu, click the menu button next to **Clean Timetable for TPU**, and choose **Pin to Toolbar**. [Firefox Help](https://support.mozilla.org/en-US/kb/extensions-button)
 
-If the controls below classes are missing, grant the add-on access to the timetable site and reload the tab.
+The **Full timetable** switch in the panel shows hidden classes. If the icon displays `!`, open a group timetable, check the add-on’s site access, and reload the tab.
 
 The Tor Browser and Mullvad Browser teams recommend sticking to their built-in add-ons. [Tor Browser](https://support.torproject.org/tor-browser/features/plugins/) · [Mullvad Browser](https://mullvad.net/en/help/faq#can-i-install-other-extensions)
 
