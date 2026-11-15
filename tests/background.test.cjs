@@ -24,21 +24,41 @@ function background({ tabs = {}, action = { onClicked: { addListener() {} } } } 
 }
 const sender = { id: 'test@local.invalid', url: 'https://my-rasp.tpu.ru/gruppa_900001/2026/10/view.html' };
 const publicSender = { ...sender, url: 'https://ro-rasp.tpu.ru/gruppa_900001/view.html' };
-test('toolbar click targets only the clicked tab and tolerates pages without a receiver', async () => {
+test('toolbar click reports missing panels and clears the warning after a successful click', async () => {
   let click;
   const sent = [];
+  const badges = new Map();
+  const titles = new Map();
+  let response;
   background({
-    action: { onClicked: { addListener(listener) { click = listener; } } },
+    action: {
+      onClicked: { addListener(listener) { click = listener; } },
+      async setBadgeText({ tabId, text }) { badges.set(tabId, text); },
+      async setTitle({ tabId, title }) { titles.set(tabId, title); },
+    },
     tabs: { async sendMessage(id, message, options) {
       sent.push(structuredClone({ id, message, options }));
       if (id === 5) throw new Error('No receiving end');
+      return response;
     } },
   });
   await click({ id: 0 });
   await click({ id: 5 });
+  for (const id of [0, 5]) {
+    assert.equal(badges.get(id), '!');
+    assert.equal(titles.get(id), mockI18n().getMessage('panelUnavailable'));
+  }
+  response = { handled: false };
+  await click({ id: 0 });
+  assert.equal(badges.get(0), '!');
+  response = { handled: true };
+  await click({ id: 0 });
+  assert.equal(badges.get(0), '');
+  assert.equal(titles.get(0), mockI18n().getMessage('togglePanel'));
+  assert.equal(badges.get(5), '!');
   await click({});
   await click(null);
-  assert.deepEqual(sent, [0, 5].map(id => ({ id, message: { kind: 'tpu:toggle-panel' }, options: { frameId: 0 } })));
+  assert.deepEqual(sent, [0, 5, 0, 0].map(id => ({ id, message: { kind: 'tpu:toggle-panel' }, options: { frameId: 0 } })));
 });
 test('background rejects other origins, pages, senders and cross-group writes', async () => {
   const send = background();

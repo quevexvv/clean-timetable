@@ -2,12 +2,20 @@
   const { createStore, rules, site } = globalThis.TpuFilter;
   const t = browser.i18n.getMessage.bind(browser.i18n);
   const store = createStore(browser.storage.local);
-  browser.action.onClicked.addListener(tab => {
-    if (tab?.id === undefined) return;
-    return browser.tabs.sendMessage(tab.id, { kind: 'tpu:toggle-panel' }, { frameId: 0 })
-      .catch(() => {
-        // Tabs without the timetable content script have no receiver.
-      });
+  browser.action.onClicked.addListener(async tab => {
+    const tabId = tab?.id;
+    if (tabId === undefined) return;
+    const response = await browser.tabs.sendMessage(tabId, { kind: 'tpu:toggle-panel' }, { frameId: 0 })
+      .catch(() => undefined);
+    const handled = response?.handled === true;
+    try {
+      await Promise.all([
+        browser.action.setBadgeText({ tabId, text: handled ? '' : '!' }),
+        browser.action.setTitle({ tabId, title: t(handled ? 'togglePanel' : 'panelUnavailable') }),
+      ]);
+    } catch {
+      // The tab can close before the toolbar can be updated.
+    }
   });
   browser.runtime.onMessage.addListener((message, sender) => {
     if (!message || !['tpu:get', 'tpu:update'].includes(message.kind)) return undefined;

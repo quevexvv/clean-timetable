@@ -182,11 +182,15 @@
   });
   browser.runtime.onMessage.addListener((message, sender, sendResponse) => {
     if (message?.kind !== 'tpu:toggle-panel' || sender.id !== browser.runtime.id) return;
-    const hadFocus = panel?.panel.contains(document.activeElement);
+    if (!table?.isConnected || !panel?.panel.isConnected) {
+      sendResponse({ handled: false });
+      return;
+    }
+    const hadFocus = panel.panel.contains(document.activeElement);
     setPanelVisible(!panelVisible);
-    if (panelVisible) panel?.focusToggle();
+    if (panelVisible) panel.focusToggle();
     else if (hadFocus) focusTable();
-    sendResponse();
+    sendResponse({ handled: true });
   });
   browser.storage.onChanged.addListener((changes, area) => {
     if (area === 'local' && changes[`tpuScheduleFilter:${group}`]) refresh();

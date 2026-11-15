@@ -57,7 +57,9 @@ function setup({ url = groupUrl(), failRead = false, failWrite = false, html = f
     button.click();
   };
   const toolbarClick = (id = extensionId) => {
-    incoming.forEach(listener => listener({ kind: 'tpu:toggle-panel' }, { id }, () => {}));
+    let response;
+    incoming.forEach(listener => listener({ kind: 'tpu:toggle-panel' }, { id }, result => { response = result; }));
+    return response;
   };
   return { dom, window, document, data, messages, store, visible, click, load, toolbarClick };
 }
@@ -69,9 +71,9 @@ test('toolbar toggles the initially hidden panel in the active page without chan
   const panel = app.document.querySelector('.tpu-panel');
   const toggle = panel.querySelector('input');
   assert.equal(panel.hidden, true);
-  app.toolbarClick('other@extension');
+  assert.equal(app.toolbarClick('other@extension'), undefined);
   assert.equal(panel.hidden, true);
-  app.toolbarClick();
+  assert.equal(app.toolbarClick().handled, true);
   assert.equal(panel.hidden, false);
   assert.equal(other.document.querySelector('.tpu-panel').hidden, true);
   assert.equal(app.document.activeElement, toggle);
@@ -82,6 +84,16 @@ test('toolbar toggles the initially hidden panel in the active page without chan
   app.toolbarClick();
   assert.equal(toggle.checked, true);
   assert.deepEqual(app.messages.map(message => message.kind), ['tpu:get']);
+});
+test('toolbar reports when a group page has no timetable yet', async t => {
+  const app = setup({ html: '<body><div id="raspisanie-table"></div></body>' });
+  t.after(() => app.dom.window.close());
+  assert.equal(app.toolbarClick().handled, false);
+  const table = new app.window.DOMParser().parseFromString(fixture, 'text/html').querySelector('.timetable');
+  app.document.querySelector('#raspisanie-table').append(table);
+  await tick();
+  assert.equal(app.toolbarClick().handled, true);
+  assert.equal(app.document.querySelector('.tpu-panel').hidden, false);
 });
 test('parser maps rowspan correctly and preserves missing-teacher and unknown blocks', async t => {
   const app = setup(); t.after(() => app.dom.window.close()); await tick();
