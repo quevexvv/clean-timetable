@@ -2,6 +2,13 @@
   const { createStore, rules, site } = globalThis.TpuFilter;
   const t = browser.i18n.getMessage.bind(browser.i18n);
   const store = createStore(browser.storage.local);
+  browser.action.onClicked.addListener(tab => {
+    if (tab.id === undefined) return;
+    return browser.tabs.sendMessage(tab.id, { kind: 'tpu:toggle-panel' }, { frameId: 0 })
+      .catch(() => {
+        // Tabs without the timetable content script have no receiver.
+      });
+  });
   browser.runtime.onMessage.addListener((message, sender) => {
     if (!message || !['tpu:get', 'tpu:update'].includes(message.kind)) return undefined;
     return (async () => {

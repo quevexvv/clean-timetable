@@ -23,9 +23,11 @@ A temporary add-on stays loaded until you restart the browser. [Mozilla instruct
 
 ## Get started
 
-Go to either timetable site, find your group, and open its timetable. If the timetable is already open, reload the tab. Look for **My timetable** above the table. To hide a class, select **Configure** below it, then choose **Skip this class** or **Always hide**. [my-rasp](https://my-rasp.tpu.ru/) · [ro-rasp](https://ro-rasp.tpu.ru/)
+Go to either timetable site, find your group, and open its timetable. If the timetable is already open, reload the tab. To hide a class, select **Configure** below it, then choose **Skip this class** or **Always hide**. [my-rasp](https://my-rasp.tpu.ru/) · [ro-rasp](https://ro-rasp.tpu.ru/)
 
-If the panel is missing, grant the add-on access to the timetable site and reload the tab.
+In the current source build, click the extension icon to open or close the **My timetable** panel. Open the extensions menu, click the menu button next to **Clean Timetable for TPU**, and choose **Pin to Toolbar**. In the v1.0.0 release, the panel is shown above the table by default. [Firefox Help](https://support.mozilla.org/en-US/kb/extensions-button)
+
+If the controls below classes are missing, grant the add-on access to the timetable site and reload the tab.
 
 The Tor Browser and Mullvad Browser teams recommend sticking to their built-in add-ons. [Tor Browser](https://support.torproject.org/tor-browser/features/plugins/) · [Mullvad Browser](https://mullvad.net/en/help/faq#can-i-install-other-extensions)
 

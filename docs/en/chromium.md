@@ -22,9 +22,11 @@ Installation requires a browser running Chromium 109 or later.
 
 ## Get started
 
-Go to either timetable site, find your group, and open its timetable. If the timetable is already open, reload the tab. Look for **My timetable** above the table. To hide a class, select **Configure** below it, then choose **Skip this class** or **Always hide**. [my-rasp](https://my-rasp.tpu.ru/) · [ro-rasp](https://ro-rasp.tpu.ru/)
+Go to either timetable site, find your group, and open its timetable. If the timetable is already open, reload the tab. To hide a class, select **Configure** below it, then choose **Skip this class** or **Always hide**. [my-rasp](https://my-rasp.tpu.ru/) · [ro-rasp](https://ro-rasp.tpu.ru/)
 
-If the panel is missing, grant the extension access to the timetable site and reload the tab.
+In the current source build, click the extension icon to open or close the **My timetable** panel. In Chrome, open the extensions menu and click the pin next to **Clean Timetable for TPU**. In the v1.0.0 release, the panel is shown above the table by default. [Chrome Help](https://support.google.com/chrome_webstore/answer/2664769?hl=en)
+
+If the controls below classes are missing, grant the extension access to the timetable site and reload the tab.
 
 ## Build from source
 

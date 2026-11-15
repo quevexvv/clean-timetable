@@ -10,9 +10,23 @@
   let busy = false;
   let ready = false;
   let panel;
+  let panelVisible = false;
+  let panelMessage = t('loadingRules');
   let table;
   let records = [];
   let refreshVersion = 0;
+  function setPanelVisible(visible) {
+    panelVisible = visible;
+    if (panel) panel.panel.hidden = !visible;
+  }
+  function showError(message) {
+    panelMessage = message;
+    setPanelVisible(true);
+  }
+  function focusTable() {
+    table.tabIndex = -1;
+    table.focus();
+  }
   async function request(message) {
     const response = await browser.runtime.sendMessage(message);
     if (!response || response.error) throw new Error(response?.error || t('backgroundUnavailable'));
@@ -25,11 +39,12 @@
       if (version !== refreshVersion) return;
       state = next;
       ready = true;
-      panel?.error('');
+      panelMessage = '';
       render();
     } catch (error) {
+      if (version !== refreshVersion) return;
       ready = false;
-      panel?.error(t('readFailed', rules.errorMessage(error, t)));
+      showError(t('readFailed', rules.errorMessage(error, t)));
       render();
     }
   }
@@ -41,13 +56,13 @@
     render();
     try {
       state = await request({ kind: 'tpu:update', action, lesson: item });
-      panel.error('');
+      panelMessage = '';
       saved = true;
       for (const entry of origin?.entries || []) {
         if (entry.controls) entry.controls.bar.open = false;
       }
     } catch (error) {
-      panel.error(t('writeFailed', rules.errorMessage(error, t)));
+      showError(t('writeFailed', rules.errorMessage(error, t)));
     } finally {
       busy = false;
       render();
@@ -57,7 +72,8 @@
         if (target?.wrapper.isConnected) {
           const control = target.controls.bar.hidden ? target.controls.restore : target.controls.bar.querySelector('summary');
           control.focus();
-        } else panel.focusToggle();
+        } else if (panelVisible) panel.focusToggle();
+        else focusTable();
       }
     }
   }
@@ -129,6 +145,7 @@
       }
     }
     panel.render(state, hiddenCount, full);
+    panel.error(panelMessage);
     for (const node of panel.panel.querySelectorAll('.tpu-rule button')) node.disabled = busy || !ready;
   }
   let scheduled = false;
@@ -137,11 +154,11 @@
     const next = document.querySelector('#raspisanie-table table.timetable, table.timetable');
     if (!next) return;
     if (next !== table) {
-      panel?.panel.remove();
+      panel?.remove();
       table = next;
       records = [];
       panel = ui.createPanel(table, value => { full = value; render(); }, item => act('unhide', item));
-      panel.error(ready ? '' : t('loadingRules'));
+      panel.panel.hidden = !panelVisible;
     }
     prepare();
   }
@@ -149,7 +166,7 @@
     // Ignore mutations made by our own UI; observe delayed decryption and table replacement.
     const relevant = mutations.some(mutation => {
       const element = mutation.target.nodeType === 1 ? mutation.target : mutation.target.parentElement;
-      return !element?.closest('.tpu-panel, .tpu-cell') &&
+      return !element?.closest('.tpu-panel, .tpu-dialog, .tpu-cell') &&
         (element?.closest('#raspisanie-table, .timetable') ||
          [...mutation.addedNodes].some(node => node.nodeType === 1 &&
            (node.matches?.('#raspisanie-table, .timetable') || node.querySelector?.('.timetable'))));
@@ -162,6 +179,14 @@
   new MutationObserver(schedule).observe(document.body, {
     childList: true, subtree: true, characterData: true, attributes: true,
     attributeFilter: ['class', 'title'],
+  });
+  browser.runtime.onMessage.addListener((message, sender, sendResponse) => {
+    if (message?.kind !== 'tpu:toggle-panel' || sender.id !== browser.runtime.id) return;
+    const hadFocus = panel?.panel.contains(document.activeElement);
+    setPanelVisible(!panelVisible);
+    if (panelVisible) panel?.focusToggle();
+    else if (hadFocus) focusTable();
+    sendResponse();
   });
   browser.storage.onChanged.addListener((changes, area) => {
     if (area === 'local' && changes[`tpuScheduleFilter:${group}`]) refresh();

@@ -28,7 +28,7 @@ Use Node.js 22.23.1 or later and run `npm ci` from the repository root. Build th
 | Firefox, Firefox ESR, Zen, LibreWolf, Waterfox, and Floorp on Gecko 142+ | `npm run build:firefox`  | Open `about:debugging`, choose **Load Temporary Add-on**, and select `dist/tpu-schedule-filter-firefox-1.0.0.zip`. |
 | Chrome, Edge, and other Chromium 109+ browsers                           | `npm run build:chromium` | Open the browser’s extensions page, enable developer mode, and select `dist/chromium/` with **Load unpacked**.     |
 
-Reload your group timetable. Look for **My timetable** above the table. Permanent installation in Firefox requires a signed add-on.
+Reload your group timetable. Click the extension icon to open or close the **My timetable** panel above the table. You can pin the icon from the browser’s extensions menu. Permanent installation in Firefox requires a signed add-on.
 
 ## Use the filter
 
@@ -36,7 +36,7 @@ Open **Configure** under a class.
 
 - **Always hide** matches the subject, instructor, and class type across weeks for the same group. A lecture and a lab count as different classes.
 - **Skip this class** hides one occurrence at the selected date and time.
-- **Full timetable** shows hidden classes. **Restore this class** restores one occurrence and keeps the recurring rule in place.
+- **Full timetable** in the **My timetable** panel shows hidden classes. **Restore this class** restores one occurrence and keeps the recurring rule in place.
 
 Remove a recurring rule under **Recurring rules**. One-off skips remain in effect. The filter changes how your group's timetable appears in the browser.
 

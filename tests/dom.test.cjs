@@ -26,16 +26,22 @@ function setup({ url = groupUrl(), failRead = false, failWrite = false, html = f
   };
   const store = createStore(adapter);
   const messages = [];
+  const incoming = [];
+  const extensionId = 'test@local.invalid';
   window.structuredClone = structuredClone;
   window.HTMLDialogElement.prototype.showModal = function () { this.open = true; };
   window.HTMLDialogElement.prototype.close = function () { this.open = false; };
   window.browser = {
     i18n: mockI18n(locale),
-    runtime: { async sendMessage(message) {
-      messages.push(message);
-      try { return { state: message.kind === 'tpu:get' ? await store.get('900001') : await store.update('900001', message.action, message.lesson) }; }
-      catch (error) { return { error: error.message }; }
-    } },
+    runtime: {
+      id: extensionId,
+      onMessage: { addListener(listener) { incoming.push(listener); } },
+      async sendMessage(message) {
+        messages.push(message);
+        try { return { state: message.kind === 'tpu:get' ? await store.get('900001') : await store.update('900001', message.action, message.lesson) }; }
+        catch (error) { return { error: error.message }; }
+      },
+    },
     storage: { onChanged: { addListener(listener) { listeners.push(listener); } } },
   };
   const load = name => window.eval(readFileSync(join(__dirname, '../src/extension', name), 'utf8'));
@@ -50,8 +56,33 @@ function setup({ url = groupUrl(), failRead = false, failWrite = false, html = f
     if (details && !details.open) details.querySelector('summary').click();
     button.click();
   };
-  return { dom, window, document, data, messages, store, visible, click, load };
+  const toolbarClick = (id = extensionId) => {
+    incoming.forEach(listener => listener({ kind: 'tpu:toggle-panel' }, { id }, () => {}));
+  };
+  return { dom, window, document, data, messages, store, visible, click, load, toolbarClick };
 }
+test('toolbar toggles the initially hidden panel in the active page without changing the view or rules', async t => {
+  const app = setup();
+  const other = setup();
+  t.after(() => { app.dom.window.close(); other.dom.window.close(); });
+  await tick();
+  const panel = app.document.querySelector('.tpu-panel');
+  const toggle = panel.querySelector('input');
+  assert.equal(panel.hidden, true);
+  app.toolbarClick('other@extension');
+  assert.equal(panel.hidden, true);
+  app.toolbarClick();
+  assert.equal(panel.hidden, false);
+  assert.equal(other.document.querySelector('.tpu-panel').hidden, true);
+  assert.equal(app.document.activeElement, toggle);
+  toggle.click();
+  app.toolbarClick();
+  assert.equal(panel.hidden, true);
+  assert.equal(app.document.activeElement, app.document.querySelector('.timetable'));
+  app.toolbarClick();
+  assert.equal(toggle.checked, true);
+  assert.deepEqual(app.messages.map(message => message.kind), ['tpu:get']);
+});
 test('parser maps rowspan correctly and preserves missing-teacher and unknown blocks', async t => {
   const app = setup(); t.after(() => app.dom.window.close()); await tick();
   const parsed = app.window.TpuFilter.parser.parse;
@@ -75,7 +106,10 @@ test('parser maps rowspan correctly and preserves missing-teacher and unknown bl
 });
 test('hide, full view, restore, skip and disable keep exact rule scope', async t => {
   const app = setup(); t.after(() => app.dom.window.close()); await tick();
+  assert.equal(app.document.querySelector('.tpu-panel').hidden, true);
   app.click(app.visible('double')[0], 'Скрывать всегда');
+  assert.equal(app.document.querySelector('dialog').open, true);
+  assert.equal(app.document.querySelector('dialog').closest('[hidden]'), null);
   assert.match(app.document.querySelector('.tpu-confirm-description').textContent, /Английский язык · ПР · Орлова/);
   app.click(app.document.querySelector('dialog'), 'Скрывать всегда'); await tick();
   assert.equal(app.visible('double').length, 1);
@@ -85,6 +119,7 @@ test('hide, full view, restore, skip and disable keep exact rule scope', async t
   assert.equal(app.visible('double')[0].classList.contains('tpu-divider'), false);
   assert.equal(app.document.querySelector('#double hr'), null);
   const saved = JSON.stringify(app.data);
+  app.toolbarClick();
   const toggle = app.document.querySelector('.tpu-toggle input');
   toggle.click(); await tick();
   assert.equal(app.visible('double').length, 2);
@@ -122,6 +157,7 @@ test('ro-rasp reuses exact my-rasp rules and recognizes links on both TPU hosts'
   assert.match(app.document.querySelector('.tpu-confirm-description').textContent, /Соколова/);
   app.click(app.document.querySelector('dialog'), 'Отмена');
 
+  app.toolbarClick();
   app.document.querySelector('.tpu-toggle input').click();
   app.click(app.visible('double')[0], 'Вернуть эту пару');
   await tick();
@@ -140,9 +176,13 @@ test('skip, empty cell, restore and a fresh page retain the saved choice', async
   const replacement = new app.window.DOMParser().parseFromString(fixture, 'text/html').querySelector('#raspisanie-table');
   app.document.querySelector('#raspisanie-table').replaceWith(replacement); await tick();
   assert.equal(app.visible('lecture').length, 0);
+  assert.equal(app.document.querySelector('.tpu-panel').hidden, true);
+  app.toolbarClick();
   app.document.querySelector('.tpu-toggle input').click(); await tick();
   const another = new app.window.DOMParser().parseFromString(fixture, 'text/html').querySelector('#raspisanie-table');
   app.document.querySelector('#raspisanie-table').replaceWith(another); await tick();
+  assert.equal(app.document.querySelector('.tpu-panel').hidden, false);
+  assert.equal(app.document.querySelectorAll('.tpu-dialog').length, 1);
   assert.equal(app.document.querySelector('.tpu-toggle input').checked, true);
   assert.equal(app.visible('lecture').length, 1);
   app.click(app.visible('lecture')[0], 'Вернуть эту пару'); await tick();
@@ -171,6 +211,7 @@ test('write failure keeps the lesson visible and reports an error', async t => {
   assert.equal(app.visible('lecture').length, 1);
   assert.match(app.document.querySelector('.tpu-error').textContent, /quota exceeded/);
   assert.equal(app.document.querySelector('.tpu-error').hidden, false);
+  assert.equal(app.document.querySelector('.tpu-panel').hidden, false);
 });
 test('read failure leaves lessons visible and disables unsafe edits', async t => {
   const app = setup({ failRead: true }); t.after(() => app.dom.window.close()); await tick();
@@ -248,6 +289,7 @@ test('English locale translates the panel, lesson actions, and hidden badges', a
   app.click(lesson, 'Skip this class');
   await tick();
   assert.equal(app.document.querySelector('.tpu-count').textContent, '1 class hidden');
+  app.toolbarClick();
   app.document.querySelector('.tpu-toggle input').click();
   assert.equal(lesson.querySelector('.tpu-badge').textContent, 'Skipped this class');
   app.click(lesson, 'Restore this class');
@@ -274,6 +316,7 @@ test('empty cells drop only the subject tint and restore the original style', as
     assert.equal(cell.style.getPropertyValue('background-color'), '');
     assert.equal(cell.style.getPropertyPriority('background-color'), '');
     assert.equal(cell.style.border, border);
+    app.toolbarClick();
     app.document.querySelector('.tpu-toggle input').click(); await tick();
     assert.equal(cell.style.backgroundColor, original);
     assert.equal(cell.style.getPropertyPriority('background-color'), priority);
@@ -312,6 +355,8 @@ test('successful skip closes the menu and focuses the remaining lesson or full v
   assert.equal(first.querySelector('details').open, false);
   assert.equal(app.document.activeElement, app.visible('double')[0].querySelector('summary'));
   app.click(app.visible('lecture')[0], 'Пропустить пару'); await tick();
+  assert.equal(app.document.activeElement, app.document.querySelector('.timetable'));
+  app.toolbarClick();
   assert.equal(app.document.activeElement, app.document.querySelector('.tpu-toggle input'));
   app.document.querySelector('.tpu-toggle input').click(); await tick();
   app.click(app.visible('lecture')[0], 'Вернуть эту пару'); await tick();

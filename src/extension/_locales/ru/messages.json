@@ -3,6 +3,7 @@
   "extensionDescription": { "message": "Уберите лишние пары из расписания Политеха. Скройте одну пару или настройте постоянное правило." },
   "panelLabel": { "message": "Фильтр расписания" },
   "panelTitle": { "message": "Моё расписание" },
+  "togglePanel": { "message": "Показать или скрыть панель «Моё расписание»" },
   "fullTimetable": { "message": "Полное расписание" },
   "hidden_one": { "message": "Скрыта $VALUE$ пара", "placeholders": { "value": { "content": "$1" } } },
   "hidden_few": { "message": "Скрыто $VALUE$ пары", "placeholders": { "value": { "content": "$1" } } },

@@ -44,5 +44,8 @@
       hasListeners() { return Boolean(source.hasListeners && source.hasListeners()); },
     };
   }
-  globalThis.browser = { storage: chromeApi.storage, i18n: chromeApi.i18n, runtime };
+  globalThis.browser = {
+    storage: chromeApi.storage, i18n: chromeApi.i18n, runtime,
+    action: chromeApi.action, tabs: chromeApi.tabs,
+  };
 })();

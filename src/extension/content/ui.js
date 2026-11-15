@@ -48,9 +48,9 @@
     const list = element('ul');
     details.append(summary, list);
     panel.append(top, status, error, details);
-    table.before(panel);
 
     const dialog = element('dialog', 'tpu-dialog');
+    dialog.lang = locale;
     dialog.setAttribute('aria-labelledby', 'tpu-confirm-title');
     const heading = element('h3', '', t('confirmTitle'));
     heading.id = 'tpu-confirm-title';
@@ -60,9 +60,10 @@
     const accept = button(t('alwaysHide'), () => { dialog.close(); confirm(); });
     const cancel = button(t('cancel'), () => dialog.close());
     dialog.append(heading, description, help, accept, cancel);
-    panel.append(dialog);
+    table.before(panel, dialog);
     return {
       panel,
+      remove() { panel.remove(); dialog.remove(); },
       focusToggle() { toggle.focus(); },
       confirm(item, handler) {
         description.textContent = label(item);
@@ -71,7 +72,7 @@
         cancel.focus();
       },
       error(message) {
-        error.textContent = message;
+        if (error.textContent !== message) error.textContent = message;
         error.hidden = !message;
       },
       render(state, hiddenCount, full) {
